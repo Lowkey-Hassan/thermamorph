@@ -113,8 +113,8 @@ export const HVAC_TYPE_LABELS: Record<HVACType, string> = {
 }
 
 export const SEVERITY_COLORS: Record<SeverityLevel, { bg: string; text: string; border: string }> = {
-  critical: { bg: 'bg-red-50',    text: 'text-red-600',    border: 'border-red-200'    },
-  high:     { bg: 'bg-orange-50', text: 'text-orange-600', border: 'border-orange-200' },
-  medium:   { bg: 'bg-yellow-50', text: 'text-yellow-600', border: 'border-yellow-200' },
-  low:      { bg: 'bg-green-50',  text: 'text-green-600',  border: 'border-green-200'  },
+  critical: { bg: 'bg-red-500/10',    text: 'text-red-400',    border: 'border-red-500/20'    },
+  high:     { bg: 'bg-orange-500/10', text: 'text-orange-400', border: 'border-orange-500/20' },
+  medium:   { bg: 'bg-yellow-500/10', text: 'text-yellow-400', border: 'border-yellow-500/20' },
+  low:      { bg: 'bg-green-500/10',  text: 'text-green-400',  border: 'border-green-500/20'  },
 }

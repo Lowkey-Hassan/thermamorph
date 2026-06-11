@@ -11,13 +11,13 @@ interface HeaderProps {
 
 export function Header({ title, description, action }: HeaderProps) {
   return (
-    <header className="sticky top-0 z-20 bg-white/90 backdrop-blur-sm border-b border-slate-200">
+    <header className="sticky top-0 z-20 bg-[#0b1220]/90 backdrop-blur-sm border-b border-white/5">
       <div className="flex items-center justify-between gap-4 px-6 py-3.5">
         {/* Left: title */}
         <div className="min-w-0">
-          <h1 className="text-lg font-semibold text-slate-900 truncate">{title}</h1>
+          <h1 className="text-lg font-semibold text-white truncate">{title}</h1>
           {description && (
-            <p className="text-xs text-slate-500 mt-0.5 truncate">{description}</p>
+            <p className="text-xs text-slate-400 mt-0.5 truncate">{description}</p>
           )}
         </div>
 
@@ -26,14 +26,14 @@ export function Header({ title, description, action }: HeaderProps) {
           <Button
             variant="ghost"
             size="sm"
-            className="hidden md:flex text-slate-400 hover:text-slate-700"
+            className="hidden md:flex text-slate-500 hover:text-slate-200"
             icon={<Search className="h-4 w-4" />}
             aria-label="Search"
           />
           <Button
             variant="ghost"
             size="sm"
-            className="text-slate-400 hover:text-slate-700 relative"
+            className="text-slate-500 hover:text-slate-200 relative"
             icon={<Bell className="h-4 w-4" />}
             aria-label="Notifications"
           >

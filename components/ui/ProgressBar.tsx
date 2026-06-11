@@ -37,11 +37,11 @@ export function ProgressBar({
     <div className={cn('w-full', className)}>
       {(label || showValue) && (
         <div className="flex justify-between items-center mb-1.5">
-          {label && <span className="text-sm font-medium text-slate-700">{label}</span>}
-          {showValue && <span className="text-sm text-slate-500">{pct}%</span>}
+          {label && <span className="text-sm font-medium text-slate-300">{label}</span>}
+          {showValue && <span className="text-sm text-slate-400">{pct}%</span>}
         </div>
       )}
-      <div className={cn('w-full rounded-full bg-slate-100', trackHeight[size])}>
+      <div className={cn('w-full rounded-full bg-white/10', trackHeight[size])}>
         <div
           className={cn(
             'rounded-full transition-all duration-500',
@@ -75,9 +75,11 @@ export function ScoreRing({ score, size = 120, strokeWidth = 10, label, classNam
   const circumference = 2 * Math.PI * r;
   const offset = circumference - (score / 100) * circumference;
 
+  // carbonScore is 0-100 where HIGHER = WORSE (more carbon-intensive), so the
+  // "good" color band is at the low end of the scale.
   const color =
-    score >= 70 ? '#10b981' : // emerald
-    score >= 45 ? '#f59e0b' : // amber
+    score <= 35 ? '#10b981' : // emerald
+    score <= 60 ? '#f59e0b' : // amber
     '#ef4444';                 // red
 
   return (
@@ -88,7 +90,7 @@ export function ScoreRing({ score, size = 120, strokeWidth = 10, label, classNam
           cy={size / 2}
           r={r}
           fill="none"
-          stroke="#e2e8f0"
+          stroke="#1e293b"
           strokeWidth={strokeWidth}
         />
         <circle
@@ -116,7 +118,7 @@ export function ScoreRing({ score, size = 120, strokeWidth = 10, label, classNam
           {score}
         </text>
       </svg>
-      {label && <span className="text-xs text-slate-500 font-medium">{label}</span>}
+      {label && <span className="text-xs text-slate-400 font-medium">{label}</span>}
     </div>
   );
 }

@@ -15,12 +15,12 @@ interface BadgeProps extends HTMLAttributes<HTMLSpanElement> {
 }
 
 const variantStyles: Record<BadgeVariant, string> = {
-  default: 'bg-emerald-50 text-emerald-700 border-emerald-200',
-  success: 'bg-green-50 text-green-700 border-green-200',
-  warning: 'bg-yellow-50 text-yellow-700 border-yellow-200',
-  danger: 'bg-red-50 text-red-700 border-red-200',
-  info: 'bg-blue-50 text-blue-700 border-blue-200',
-  neutral: 'bg-slate-100 text-slate-600 border-slate-200',
+  default: 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20',
+  success: 'bg-green-500/10 text-green-400 border-green-500/20',
+  warning: 'bg-yellow-500/10 text-yellow-400 border-yellow-500/20',
+  danger: 'bg-red-500/10 text-red-400 border-red-500/20',
+  info: 'bg-blue-500/10 text-blue-400 border-blue-500/20',
+  neutral: 'bg-white/5 text-slate-400 border-white/10',
 };
 
 const dotColors: Record<BadgeVariant, string> = {

@@ -42,15 +42,17 @@ export function EnergyBreakdownChart({ data, height = 280 }: EnergyBreakdownChar
           ]}
           contentStyle={{
             borderRadius: '8px',
-            border: '1px solid #e2e8f0',
+            border: '1px solid rgba(255,255,255,0.1)',
             fontSize: '13px',
+            backgroundColor: '#1e293b',
+            color: '#e2e8f0',
           }}
         />
         <Legend
           iconType="circle"
           iconSize={8}
           formatter={(value: string) => (
-            <span className="text-xs text-slate-600">{value}</span>
+            <span className="text-xs text-slate-400">{value}</span>
           )}
         />
       </PieChart>

@@ -39,7 +39,7 @@ export function CarbonSavingsChart({ data, height = 260 }: CarbonSavingsChartPro
   return (
     <ResponsiveContainer width="100%" height={height}>
       <BarChart data={chartData} margin={{ top: 4, right: 8, left: 8, bottom: 60 }}>
-        <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
+        <CartesianGrid strokeDasharray="3 3" stroke="#1e293b" />
         <XAxis
           dataKey="name"
           tick={{ fontSize: 11, fill: '#94a3b8' }}
@@ -53,7 +53,7 @@ export function CarbonSavingsChart({ data, height = 260 }: CarbonSavingsChartPro
         />
         <Tooltip
           formatter={(value: number) => [`${value.toLocaleString()} kg CO2/yr`, 'CO2 Reduction']}
-          contentStyle={{ borderRadius: '8px', border: '1px solid #e2e8f0', fontSize: '13px' }}
+          contentStyle={{ borderRadius: '8px', border: '1px solid rgba(255,255,255,0.1)', fontSize: '13px', backgroundColor: '#1e293b', color: '#e2e8f0' }}
         />
         <Bar dataKey="co2SavingKg" radius={[4, 4, 0, 0]}>
           {chartData.map((d, i) => (

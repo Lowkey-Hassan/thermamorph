@@ -4,7 +4,7 @@ import { cn } from '@/lib/utils';
 // ─── Base styles ──────────────────────────────────────────────────────────────
 
 const baseInput =
-  'w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 disabled:bg-slate-50 disabled:text-slate-400 disabled:cursor-not-allowed transition-colors';
+  'w-full rounded-lg border border-white/10 bg-white/5 px-3 py-2 text-sm text-slate-100 placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 disabled:bg-white/[0.02] disabled:text-slate-600 disabled:cursor-not-allowed transition-colors';
 
 // ─── Label ────────────────────────────────────────────────────────────────────
 
@@ -15,7 +15,7 @@ interface LabelProps extends React.LabelHTMLAttributes<HTMLLabelElement> {
 export function Label({ required, className, children, ...props }: LabelProps) {
   return (
     <label
-      className={cn('block text-sm font-medium text-slate-700 mb-1.5', className)}
+      className={cn('block text-sm font-medium text-slate-300 mb-1.5', className)}
       {...props}
     >
       {children}
@@ -46,7 +46,7 @@ export function Field({ label, required, error, hint, className, htmlFor, childr
       )}
       {children}
       {hint && !error && <p className="text-xs text-slate-500">{hint}</p>}
-      {error && <p className="text-xs text-red-600">{error}</p>}
+      {error && <p className="text-xs text-red-400">{error}</p>}
     </div>
   );
 }
@@ -62,7 +62,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
   ({ error, icon, className, ...props }, ref) => (
     <div className="relative">
       {icon && (
-        <span className="absolute inset-y-0 left-3 flex items-center text-slate-400 pointer-events-none">
+        <span className="absolute inset-y-0 left-3 flex items-center text-slate-500 pointer-events-none">
           {icon}
         </span>
       )}
@@ -102,12 +102,12 @@ export const Select = forwardRef<HTMLSelectElement, SelectProps>(
       {...props}
     >
       {placeholder && (
-        <option value="" disabled>
+        <option value="" disabled className="bg-[#0f172a] text-slate-500">
           {placeholder}
         </option>
       )}
       {options.map((opt) => (
-        <option key={opt.value} value={opt.value}>
+        <option key={opt.value} value={opt.value} className="bg-[#0f172a] text-slate-200">
           {opt.label}
         </option>
       ))}

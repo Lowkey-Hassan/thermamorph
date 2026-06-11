@@ -47,39 +47,39 @@ interface BodyStyle {
 
 const BODY_STYLES: Record<CarbonBodyState, BodyStyle> = {
   thriving: {
-    text: 'text-emerald-600',
-    bg: 'bg-emerald-50',
-    ring: 'ring-emerald-200',
+    text: 'text-emerald-400',
+    bg: 'bg-emerald-500/10',
+    ring: 'ring-emerald-500/20',
     bar: 'bg-emerald-500',
     hex: '#10b981',
-    gradient: 'from-emerald-50 via-white to-white',
+    gradient: 'from-emerald-500/10 via-transparent to-transparent',
     glow: false,
   },
   strained: {
-    text: 'text-amber-600',
-    bg: 'bg-amber-50',
-    ring: 'ring-amber-200',
+    text: 'text-amber-400',
+    bg: 'bg-amber-500/10',
+    ring: 'ring-amber-500/20',
     bar: 'bg-amber-500',
     hex: '#f59e0b',
-    gradient: 'from-amber-50 via-white to-white',
+    gradient: 'from-amber-500/10 via-transparent to-transparent',
     glow: false,
   },
   distressed: {
-    text: 'text-orange-600',
-    bg: 'bg-orange-50',
-    ring: 'ring-orange-200',
+    text: 'text-orange-400',
+    bg: 'bg-orange-500/10',
+    ring: 'ring-orange-500/20',
     bar: 'bg-orange-500',
     hex: '#f97316',
-    gradient: 'from-orange-50 via-white to-white',
+    gradient: 'from-orange-500/10 via-transparent to-transparent',
     glow: true,
   },
   critical: {
-    text: 'text-red-600',
-    bg: 'bg-red-50',
-    ring: 'ring-red-200',
+    text: 'text-red-400',
+    bg: 'bg-red-500/10',
+    ring: 'ring-red-500/20',
     bar: 'bg-red-500',
     hex: '#ef4444',
-    gradient: 'from-red-50 via-white to-white',
+    gradient: 'from-red-500/10 via-transparent to-transparent',
     glow: true,
   },
 }
@@ -135,14 +135,14 @@ export function CarbonRealityCheck({ annualCo2Kg, carbonScore, buildYear }: Carb
   return (
     <div
       className={cn(
-        'relative rounded-2xl border border-slate-200 bg-gradient-to-br shadow-sm overflow-hidden lg:col-span-2 animate-fade-in-up',
+        'relative rounded-2xl border border-white/5 bg-white/[0.03] bg-gradient-to-br overflow-hidden lg:col-span-2 animate-fade-in-up',
         styles.gradient,
         'animate-gradient-shift'
       )}
     >
-      <div className="px-6 py-4 border-b border-slate-100 bg-white/60 backdrop-blur-sm flex items-center justify-between">
+      <div className="px-6 py-4 border-b border-white/5 bg-white/[0.02] backdrop-blur-sm flex items-center justify-between">
         <div>
-          <h3 className="text-sm font-semibold text-slate-900 flex items-center gap-2">
+          <h3 className="text-sm font-semibold text-slate-100 flex items-center gap-2">
             <span
               className={cn('flex h-7 w-7 items-center justify-center rounded-lg', styles.bg, styles.glow && 'animate-glow-pulse')}
               style={GLOW_VARS[bodyState]}
@@ -151,17 +151,17 @@ export function CarbonRealityCheck({ annualCo2Kg, carbonScore, buildYear }: Carb
             </span>
             Carbon Reality Check
           </h3>
-          <p className="text-xs text-slate-400 mt-0.5">
+          <p className="text-xs text-slate-500 mt-0.5">
             What these numbers actually mean — beyond the spreadsheet
           </p>
         </div>
-        <div className="hidden sm:flex items-center gap-1.5 text-[11px] font-medium text-slate-400">
+        <div className="hidden sm:flex items-center gap-1.5 text-[11px] font-medium text-slate-500">
           <Sparkles className="h-3 w-3 animate-float" />
           Our highlight
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 divide-y md:divide-y-0 md:divide-x divide-slate-100">
+      <div className="grid grid-cols-1 md:grid-cols-3 divide-y md:divide-y-0 md:divide-x divide-white/5">
 
         {/* 1. Carbon Body: animated radial gauge */}
         <div className="p-6 animate-fade-in-up animate-delay-100">
@@ -170,7 +170,7 @@ export function CarbonRealityCheck({ annualCo2Kg, carbonScore, buildYear }: Carb
               <HeartPulse className={cn('h-4 w-4', styles.text, styles.glow && 'animate-pulse')} />
             </div>
             <div>
-              <p className="text-xs text-slate-400">Building vitals</p>
+              <p className="text-xs text-slate-500">Building vitals</p>
               <p className={cn('text-sm font-bold', styles.text)}>{bodyCopy.label}</p>
             </div>
           </div>
@@ -188,32 +188,32 @@ export function CarbonRealityCheck({ annualCo2Kg, carbonScore, buildYear }: Carb
                 endAngle={-270}
               >
                 <PolarAngleAxis type="number" domain={[0, 100]} angleAxisId={0} tick={false} />
-                <RadialBar background={{ fill: '#f1f5f9' }} dataKey="value" cornerRadius={8} />
+                <RadialBar background={{ fill: '#1e293b' }} dataKey="value" cornerRadius={8} />
               </RadialBarChart>
             </ResponsiveContainer>
             <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
               <span className={cn('text-3xl font-black tabular-nums', styles.text)}>{carbonScore}</span>
-              <span className="text-[10px] uppercase tracking-wider text-slate-400">carbon score</span>
+              <span className="text-[10px] uppercase tracking-wider text-slate-500">carbon score</span>
             </div>
           </div>
 
-          <p className="text-sm text-slate-600 leading-relaxed">{bodyCopy.description}</p>
+          <p className="text-sm text-slate-400 leading-relaxed">{bodyCopy.description}</p>
         </div>
 
         {/* 2. Lifetime Ledger: cumulative emissions area chart */}
         <div className="p-6 animate-fade-in-up animate-delay-200">
           <div className="flex items-center gap-2 mb-3">
-            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-slate-100 ring-4 ring-slate-50">
-              <Clock className="h-4 w-4 text-slate-500" />
+            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-white/5 ring-4 ring-white/[0.02]">
+              <Clock className="h-4 w-4 text-slate-400" />
             </div>
             <div>
-              <p className="text-xs text-slate-400">Since {buildYear} ({ledger.ageYears} years)</p>
-              <p className="text-sm font-bold text-slate-900">Lifetime Ledger</p>
+              <p className="text-xs text-slate-500">Since {buildYear} ({ledger.ageYears} years)</p>
+              <p className="text-sm font-bold text-slate-100">Lifetime Ledger</p>
             </div>
           </div>
 
-          <p className="text-2xl font-black text-slate-900 mb-1 tabular-nums">
-            {formatNumber(ledger.lifetimeCo2Tonnes)} <span className="text-sm font-medium text-slate-400">tonnes CO2</span>
+          <p className="text-2xl font-black text-white mb-1 tabular-nums">
+            {formatNumber(ledger.lifetimeCo2Tonnes)} <span className="text-sm font-medium text-slate-500">tonnes CO2</span>
           </p>
 
           {ledgerData.length > 1 && (
@@ -226,11 +226,11 @@ export function CarbonRealityCheck({ annualCo2Kg, carbonScore, buildYear }: Carb
                       <stop offset="100%" stopColor={styles.hex} stopOpacity={0} />
                     </linearGradient>
                   </defs>
-                  <XAxis dataKey="year" tick={{ fontSize: 10, fill: '#cbd5e1' }} tickLine={false} axisLine={false} interval="preserveStartEnd" />
+                  <XAxis dataKey="year" tick={{ fontSize: 10, fill: '#64748b' }} tickLine={false} axisLine={false} interval="preserveStartEnd" />
                   <Tooltip
                     formatter={(value: number) => [`${formatNumber(value)} t CO2`, 'Cumulative']}
                     labelFormatter={(label) => `Year ${label}`}
-                    contentStyle={{ borderRadius: '8px', border: '1px solid #e2e8f0', fontSize: '12px' }}
+                    contentStyle={{ borderRadius: '8px', border: '1px solid rgba(255,255,255,0.1)', fontSize: '12px', backgroundColor: '#1e293b', color: '#e2e8f0' }}
                   />
                   <Area
                     type="monotone"
@@ -244,10 +244,10 @@ export function CarbonRealityCheck({ annualCo2Kg, carbonScore, buildYear }: Carb
             </div>
           )}
 
-          <p className="text-sm text-slate-600 leading-relaxed flex items-start gap-1.5">
-            <Plane className="h-3.5 w-3.5 text-slate-400 mt-0.5 shrink-0" />
+          <p className="text-sm text-slate-400 leading-relaxed flex items-start gap-1.5">
+            <Plane className="h-3.5 w-3.5 text-slate-500 mt-0.5 shrink-0" />
             This building has emitted the equivalent of{' '}
-            <strong className="text-slate-900">{formatNumber(lifetimeFlights)} domestic flights</strong>{' '}
+            <strong className="text-white">{formatNumber(lifetimeFlights)} domestic flights</strong>{' '}
             since it was built — and counting, every single year it stays unfixed.
           </p>
         </div>
@@ -255,28 +255,28 @@ export function CarbonRealityCheck({ annualCo2Kg, carbonScore, buildYear }: Carb
         {/* 3. The Inheritance: bar comparison vs fair-share budget */}
         <div className="p-6 animate-fade-in-up animate-delay-300">
           <div className="flex items-center gap-2 mb-3">
-            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-blue-50 ring-4 ring-blue-100">
-              <Users className="h-4 w-4 text-blue-500" />
+            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-blue-500/10 ring-4 ring-blue-500/20">
+              <Users className="h-4 w-4 text-blue-400" />
             </div>
             <div>
-              <p className="text-xs text-slate-400">Per year, ongoing</p>
-              <p className="text-sm font-bold text-slate-900">The Inheritance</p>
+              <p className="text-xs text-slate-500">Per year, ongoing</p>
+              <p className="text-sm font-bold text-slate-100">The Inheritance</p>
             </div>
           </div>
 
-          <p className="text-2xl font-black text-slate-900 mb-1 tabular-nums">
-            {budgetMultiple.toFixed(1)}x <span className="text-sm font-medium text-slate-400">a fair-share budget</span>
+          <p className="text-2xl font-black text-white mb-1 tabular-nums">
+            {budgetMultiple.toFixed(1)}x <span className="text-sm font-medium text-slate-500">a fair-share budget</span>
           </p>
 
           <div className="h-24 -ml-2 mb-2">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={inheritanceData} layout="vertical" margin={{ top: 4, right: 16, left: 8, bottom: 0 }}>
-                <CartesianGrid horizontal={false} stroke="#f1f5f9" />
-                <XAxis type="number" tick={{ fontSize: 10, fill: '#cbd5e1' }} tickFormatter={(v) => `${v}t`} axisLine={false} tickLine={false} />
-                <YAxis type="category" dataKey="name" tick={{ fontSize: 11, fill: '#64748b' }} width={88} axisLine={false} tickLine={false} />
+                <CartesianGrid horizontal={false} stroke="#1e293b" />
+                <XAxis type="number" tick={{ fontSize: 10, fill: '#64748b' }} tickFormatter={(v) => `${v}t`} axisLine={false} tickLine={false} />
+                <YAxis type="category" dataKey="name" tick={{ fontSize: 11, fill: '#94a3b8' }} width={88} axisLine={false} tickLine={false} />
                 <Tooltip
                   formatter={(value: number) => [`${formatNumber(value)} t CO2/yr`, '']}
-                  contentStyle={{ borderRadius: '8px', border: '1px solid #e2e8f0', fontSize: '12px' }}
+                  contentStyle={{ borderRadius: '8px', border: '1px solid rgba(255,255,255,0.1)', fontSize: '12px', backgroundColor: '#1e293b', color: '#e2e8f0' }}
                 />
                 <Bar dataKey="tonnes" radius={[0, 4, 4, 0]} barSize={16}>
                   {inheritanceData.map((entry, i) => (
@@ -287,12 +287,12 @@ export function CarbonRealityCheck({ annualCo2Kg, carbonScore, buildYear }: Carb
             </ResponsiveContainer>
           </div>
 
-          <p className="text-sm text-slate-600 leading-relaxed flex items-start gap-1.5">
-            <TreePine className="h-3.5 w-3.5 text-slate-400 mt-0.5 shrink-0" />
+          <p className="text-sm text-slate-400 leading-relaxed flex items-start gap-1.5">
+            <TreePine className="h-3.5 w-3.5 text-slate-500 mt-0.5 shrink-0" />
             This single building consumes about{' '}
-            <strong className="text-slate-900">{budgetMultiple.toFixed(1)}x one person&rsquo;s</strong>{' '}
+            <strong className="text-white">{budgetMultiple.toFixed(1)}x one person&rsquo;s</strong>{' '}
             sustainable annual carbon budget — and would need{' '}
-            <strong className="text-slate-900">{formatNumber(annualTreeYears)} mature trees</strong>{' '}
+            <strong className="text-white">{formatNumber(annualTreeYears)} mature trees</strong>{' '}
             growing for a full year just to absorb this year&rsquo;s emissions.
           </p>
         </div>

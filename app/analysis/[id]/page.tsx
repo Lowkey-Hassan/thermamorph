@@ -7,7 +7,7 @@ import { Leaf, Zap, BarChart3, FileText, CheckCircle, XCircle } from 'lucide-rea
 const STEPS = [
   { icon: Leaf,       label: 'Preparing building context' },
   { icon: Zap,        label: 'Fetching uploaded photos' },
-  { icon: Zap,        label: 'Sending images to Claude AI' },
+  { icon: Zap,        label: 'Sending images to AI vision model' },
   { icon: BarChart3,  label: 'Analysing thermal envelope' },
   { icon: BarChart3,  label: 'Calculating carbon impact' },
   { icon: FileText,   label: 'Generating decarbonisation roadmap' },
@@ -102,7 +102,7 @@ export default function AnalysisPage() {
           <>
             <h1 className="text-2xl font-bold text-white mb-3">AI Analysis in Progress</h1>
             <p className="text-slate-400 text-sm mb-10">
-              Claude is examining your building photos and generating a carbon assessment.
+              AI is examining your building photos and generating a carbon assessment.
               This typically takes 30-60 seconds.
             </p>
 

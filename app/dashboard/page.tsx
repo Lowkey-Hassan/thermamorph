@@ -80,17 +80,17 @@ function CompareModal({
       aria-modal="true"
       aria-labelledby="compare-modal-title"
     >
-      <div className="w-full max-w-3xl bg-white rounded-2xl shadow-2xl border border-slate-200 overflow-hidden">
+      <div className="w-full max-w-3xl bg-[#0f172a] rounded-2xl shadow-2xl border border-white/10 overflow-hidden">
         {/* Header */}
-        <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100">
+        <div className="flex items-center justify-between px-6 py-4 border-b border-white/5">
           <div>
-            <h2 id="compare-modal-title" className="text-lg font-bold text-slate-900">Audit Comparison</h2>
-            <p className="text-sm text-slate-500 mt-0.5">Carbon scores across all your completed audits</p>
+            <h2 id="compare-modal-title" className="text-lg font-bold text-white">Audit Comparison</h2>
+            <p className="text-sm text-slate-400 mt-0.5">Carbon scores across all your completed audits</p>
           </div>
           <button
             onClick={onClose}
             aria-label="Close comparison modal"
-            className="rounded-lg p-1.5 text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors"
+            className="rounded-lg p-1.5 text-slate-500 hover:text-slate-200 hover:bg-white/5 transition-colors"
           >
             <X className="h-5 w-5" aria-hidden="true" />
           </button>
@@ -99,7 +99,7 @@ function CompareModal({
         {/* Chart */}
         <div className="px-6 pt-6 pb-2">
           {chartData.length === 0 ? (
-            <div className="flex flex-col items-center justify-center py-16 text-slate-400">
+            <div className="flex flex-col items-center justify-center py-16 text-slate-500">
               <BarChart3 className="h-10 w-10 mb-3 opacity-40" />
               <p className="text-sm font-medium">No completed audits to compare yet.</p>
             </div>
@@ -107,17 +107,17 @@ function CompareModal({
             <>
               <ResponsiveContainer width="100%" height={280}>
                 <BarChart data={chartData} margin={{ top: 8, right: 16, left: 0, bottom: 40 }}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
+                  <CartesianGrid strokeDasharray="3 3" stroke="#1e293b" />
                   <XAxis
                     dataKey="name"
-                    tick={{ fontSize: 11, fill: '#64748b' }}
+                    tick={{ fontSize: 11, fill: '#94a3b8' }}
                     angle={-35}
                     textAnchor="end"
                     interval={0}
                   />
                   <YAxis
                     domain={[0, 100]}
-                    tick={{ fontSize: 11, fill: '#64748b' }}
+                    tick={{ fontSize: 11, fill: '#94a3b8' }}
                     label={{ value: 'Carbon Score', angle: -90, position: 'insideLeft', offset: 12, style: { fontSize: 11, fill: '#94a3b8' } }}
                   />
                   <Tooltip
@@ -125,13 +125,13 @@ function CompareModal({
                       if (!active || !payload?.length) return null
                       const d = payload[0].payload
                       return (
-                        <div className="bg-white border border-slate-200 rounded-lg shadow-lg p-3 text-xs">
-                          <p className="font-semibold text-slate-900 mb-1">{d.fullName}</p>
-                          <p className="text-slate-500">{d.location}</p>
+                        <div className="bg-[#1e293b] border border-white/10 rounded-lg shadow-lg p-3 text-xs">
+                          <p className="font-semibold text-white mb-1">{d.fullName}</p>
+                          <p className="text-slate-400">{d.location}</p>
                           <p className="mt-1.5 font-bold" style={{ color: scoreColor(d.score) }}>
                             Score: {d.score}/100 — {scoreLabel(d.score)}
                           </p>
-                          <p className="text-slate-600">CO₂: {d.co2} t/year</p>
+                          <p className="text-slate-300">CO₂: {d.co2} t/year</p>
                         </div>
                       )
                     }}
@@ -145,7 +145,7 @@ function CompareModal({
               </ResponsiveContainer>
 
               {/* Score legend */}
-              <div className="flex items-center justify-center gap-6 mt-2 pb-2 text-xs text-slate-500">
+              <div className="flex items-center justify-center gap-6 mt-2 pb-2 text-xs text-slate-400">
                 <span className="flex items-center gap-1.5"><span className="h-2.5 w-2.5 rounded-sm bg-emerald-500 inline-block" /> Good (≤35)</span>
                 <span className="flex items-center gap-1.5"><span className="h-2.5 w-2.5 rounded-sm bg-amber-400 inline-block" /> Average (36–60)</span>
                 <span className="flex items-center gap-1.5"><span className="h-2.5 w-2.5 rounded-sm bg-red-500 inline-block" /> Poor (&gt;60)</span>
@@ -156,15 +156,15 @@ function CompareModal({
 
         {/* Summary row */}
         {chartData.length > 0 && (
-          <div className="grid grid-cols-3 divide-x divide-slate-100 border-t border-slate-100 bg-slate-50">
+          <div className="grid grid-cols-3 divide-x divide-white/5 border-t border-white/5 bg-white/[0.02]">
             {[
               { label: 'Audits compared', value: chartData.length },
               { label: 'Best score', value: `${Math.min(...chartData.map((d) => d.score))}/100` },
               { label: 'Total CO₂/year', value: `${chartData.reduce((s, d) => s + d.co2, 0)} t` },
             ].map(({ label, value }) => (
               <div key={label} className="px-6 py-4 text-center">
-                <p className="text-xl font-bold text-slate-900">{value}</p>
-                <p className="text-xs text-slate-500 mt-0.5">{label}</p>
+                <p className="text-xl font-bold text-white">{value}</p>
+                <p className="text-xs text-slate-400 mt-0.5">{label}</p>
               </div>
             ))}
           </div>
@@ -296,27 +296,27 @@ export default function DashboardPage() {
             {/* KPI cards */}
             <div className="grid grid-cols-2 xl:grid-cols-4 gap-4">
               {[
-                { label: 'Total Audits',   value: loading ? '—' : audits.length,     icon: Building2,     accent: 'bg-blue-50 text-blue-600'    },
-                { label: 'Completed',      value: loading ? '—' : completed.length,  icon: CheckCircle,   accent: 'bg-emerald-50 text-emerald-600'},
-                { label: 'In Progress',    value: loading ? '—' : inProgress.length, icon: Zap,           accent: 'bg-amber-50 text-amber-600'   },
-                { label: 'Needs Attention',value: loading ? '—' : errors.length,     icon: AlertTriangle, accent: 'bg-red-50 text-red-600'       },
+                { label: 'Total Audits',   value: loading ? '—' : audits.length,     icon: Building2,     accent: 'bg-blue-500/10 text-blue-400'    },
+                { label: 'Completed',      value: loading ? '—' : completed.length,  icon: CheckCircle,   accent: 'bg-emerald-500/10 text-emerald-400'},
+                { label: 'In Progress',    value: loading ? '—' : inProgress.length, icon: Zap,           accent: 'bg-amber-500/10 text-amber-400'   },
+                { label: 'Needs Attention',value: loading ? '—' : errors.length,     icon: AlertTriangle, accent: 'bg-red-500/10 text-red-400'       },
               ].map(({ label, value, icon: Icon, accent }) => (
-                <div key={label} className="rounded-xl border border-slate-200 bg-white shadow-sm p-5 flex items-start gap-4">
+                <div key={label} className="rounded-xl border border-white/5 bg-white/[0.03] p-5 flex items-start gap-4">
                   <span className={cn('shrink-0 rounded-lg p-2.5', accent)}>
                     <Icon className="h-5 w-5" />
                   </span>
                   <div>
-                    <p className="text-sm text-slate-500">{label}</p>
-                    <p className="text-2xl font-bold text-slate-900 mt-0.5">{value}</p>
+                    <p className="text-sm text-slate-400">{label}</p>
+                    <p className="text-2xl font-bold text-white mt-0.5">{value}</p>
                   </div>
                 </div>
               ))}
             </div>
 
             {/* Audits table */}
-            <div className="rounded-2xl border border-slate-200 bg-white shadow-sm overflow-hidden">
-              <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100">
-                <h2 className="text-base font-semibold text-slate-900">All Building Audits</h2>
+            <div className="rounded-2xl border border-white/5 bg-white/[0.03] overflow-hidden">
+              <div className="flex items-center justify-between px-6 py-4 border-b border-white/5">
+                <h2 className="text-base font-semibold text-white">All Building Audits</h2>
                 <Link href="/audit/new">
                   <Button size="sm" variant="outline" icon={<Plus className="h-3.5 w-3.5" />}>New Audit</Button>
                 </Link>
@@ -327,17 +327,17 @@ export default function DashboardPage() {
                   role="status"
                   aria-live="polite"
                   aria-label="Loading audits"
-                  className="flex items-center justify-center py-20 text-slate-400"
+                  className="flex items-center justify-center py-20 text-slate-500"
                 >
                   <Loader2 className="h-6 w-6 animate-spin mr-2" aria-hidden="true" /> Loading...
                 </div>
               ) : audits.length === 0 ? (
                 <div className="flex flex-col items-center justify-center py-20 gap-3 text-center px-6">
-                  <div className="h-16 w-16 rounded-2xl bg-emerald-50 flex items-center justify-center">
-                    <Leaf className="h-8 w-8 text-emerald-300" />
+                  <div className="h-16 w-16 rounded-2xl bg-emerald-500/10 flex items-center justify-center">
+                    <Leaf className="h-8 w-8 text-emerald-400" />
                   </div>
-                  <p className="text-slate-700 font-semibold text-lg">No audits yet</p>
-                  <p className="text-slate-400 text-sm max-w-xs leading-relaxed">
+                  <p className="text-slate-200 font-semibold text-lg">No audits yet</p>
+                  <p className="text-slate-500 text-sm max-w-xs leading-relaxed">
                     Run your first building audit to see carbon scores, problem areas, and a decarbonisation roadmap.
                   </p>
                   <Link href="/audit/new">
@@ -345,7 +345,7 @@ export default function DashboardPage() {
                   </Link>
                 </div>
               ) : (
-                <div className="divide-y divide-slate-50">
+                <div className="divide-y divide-white/5">
                   {audits.map((audit) => {
                     const meta = STATUS_META[audit.status] ?? STATUS_META.draft
                     const isComplete = audit.status === 'complete'
@@ -360,7 +360,7 @@ export default function DashboardPage() {
                         aria-label={isComplete ? `View results for ${audit.name}` : undefined}
                         className={cn(
                           'group flex items-center gap-4 px-6 py-4 transition-colors',
-                          isComplete ? 'hover:bg-slate-50/80 cursor-pointer' : 'opacity-90'
+                          isComplete ? 'hover:bg-white/[0.04] cursor-pointer' : 'opacity-90'
                         )}
                         onClick={() => isComplete && router.push(`/results/${audit.id}`)}
                         onKeyDown={(e) => {
@@ -375,16 +375,16 @@ export default function DashboardPage() {
                           {isComplete && score ? (
                             <ScoreRing score={score.carbonScore} size={52} strokeWidth={5} />
                           ) : (
-                            <div className="h-[52px] w-[52px] rounded-full border-2 border-dashed border-slate-200 flex items-center justify-center">
-                              <Building2 className="h-5 w-5 text-slate-300" />
+                            <div className="h-[52px] w-[52px] rounded-full border-2 border-dashed border-white/10 flex items-center justify-center">
+                              <Building2 className="h-5 w-5 text-slate-600" />
                             </div>
                           )}
                         </div>
 
                         {/* Info */}
                         <div className="flex-1 min-w-0">
-                          <p className="text-sm font-semibold text-slate-900 truncate">{audit.name}</p>
-                          <p className="text-xs text-slate-400 mt-0.5">
+                          <p className="text-sm font-semibold text-slate-100 truncate">{audit.name}</p>
+                          <p className="text-xs text-slate-500 mt-0.5">
                             {audit.building_type} &middot; {audit.location} &middot; Built {audit.build_year}
                           </p>
                           {isComplete && score && (
@@ -473,25 +473,25 @@ export default function DashboardPage() {
                   aria-disabled={disabled}
                   aria-label={hint ?? title}
                   className={cn(
-                    'group rounded-2xl border border-slate-200 bg-white p-5 text-left transition-all',
+                    'group rounded-2xl border border-white/5 bg-white/[0.03] p-5 text-left transition-all',
                     disabled
                       ? 'opacity-50 cursor-not-allowed'
-                      : 'hover:shadow-md hover:-translate-y-0.5 cursor-pointer active:translate-y-0'
+                      : 'hover:bg-white/[0.05] hover:-translate-y-0.5 cursor-pointer active:translate-y-0'
                   )}
                 >
                   <span className={cn(
                     'inline-flex h-10 w-10 items-center justify-center rounded-xl mb-3 transition-colors',
-                    color === 'emerald' && 'bg-emerald-50 text-emerald-600 group-hover:bg-emerald-100',
-                    color === 'blue'    && 'bg-blue-50 text-blue-600 group-hover:bg-blue-100',
-                    color === 'violet'  && 'bg-violet-50 text-violet-600 group-hover:bg-violet-100',
+                    color === 'emerald' && 'bg-emerald-500/10 text-emerald-400 group-hover:bg-emerald-500/20',
+                    color === 'blue'    && 'bg-blue-500/10 text-blue-400 group-hover:bg-blue-500/20',
+                    color === 'violet'  && 'bg-violet-500/10 text-violet-400 group-hover:bg-violet-500/20',
                   )}>
                     <Icon className="h-5 w-5" />
                   </span>
-                  <p className="text-sm font-semibold text-slate-900 mb-1 flex items-center gap-1.5">
+                  <p className="text-sm font-semibold text-slate-100 mb-1 flex items-center gap-1.5">
                     {title}
-                    {!disabled && <ArrowUpRight className="h-3.5 w-3.5 text-slate-300 group-hover:text-slate-600 transition-colors" />}
+                    {!disabled && <ArrowUpRight className="h-3.5 w-3.5 text-slate-600 group-hover:text-slate-300 transition-colors" />}
                   </p>
-                  <p className="text-xs text-slate-500 leading-relaxed">{hint ?? desc}</p>
+                  <p className="text-xs text-slate-400 leading-relaxed">{hint ?? desc}</p>
                 </button>
               ))}
             </div>

@@ -16,13 +16,13 @@ const variantStyles: Record<Variant, string> = {
   primary:
     'bg-emerald-600 text-white hover:bg-emerald-700 active:bg-emerald-800 shadow-sm',
   secondary:
-    'bg-slate-100 text-slate-800 hover:bg-slate-200 active:bg-slate-300',
+    'bg-white/10 text-slate-100 hover:bg-white/20 active:bg-white/25',
   ghost:
-    'text-slate-600 hover:bg-slate-100 active:bg-slate-200',
+    'text-slate-400 hover:bg-white/5 hover:text-slate-200 active:bg-white/10',
   danger:
     'bg-red-600 text-white hover:bg-red-700 active:bg-red-800 shadow-sm',
   outline:
-    'border border-slate-300 text-slate-700 hover:bg-slate-50 active:bg-slate-100',
+    'border border-white/10 text-slate-300 hover:bg-white/5 active:bg-white/10',
 };
 
 const sizeStyles: Record<Size, string> = {

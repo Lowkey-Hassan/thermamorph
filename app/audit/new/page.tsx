@@ -255,18 +255,18 @@ export default function NewAuditPage() {
                   'flex h-8 w-8 items-center justify-center rounded-full text-sm font-semibold transition-colors',
                   i < step ? 'bg-emerald-500 text-white' :
                   i === step ? 'bg-emerald-600 text-white' :
-                  'bg-slate-100 text-slate-400'
+                  'bg-white/5 text-slate-500'
                 )}>
                   {i < step ? '✓' : i + 1}
                 </div>
                 <span className={cn(
                   'ml-2 text-sm font-medium',
-                  i === step ? 'text-slate-900' : 'text-slate-400'
+                  i === step ? 'text-white' : 'text-slate-500'
                 )}>
                   {label}
                 </span>
                 {i < STEPS.length - 1 && (
-                  <div className={cn('mx-4 h-px w-12 flex-shrink-0', i < step ? 'bg-emerald-500' : 'bg-slate-200')} />
+                  <div className={cn('mx-4 h-px w-12 flex-shrink-0', i < step ? 'bg-emerald-500' : 'bg-white/10')} />
                 )}
               </div>
             ))}
@@ -382,8 +382,8 @@ export default function NewAuditPage() {
             <div className="space-y-6">
               {/* Required photo checklist */}
               <Card>
-                <h3 className="text-sm font-semibold text-slate-900 mb-1">What to upload</h3>
-                <p className="text-xs text-slate-500 mb-4 leading-relaxed">
+                <h3 className="text-sm font-semibold text-slate-100 mb-1">What to upload</h3>
+                <p className="text-xs text-slate-400 mb-4 leading-relaxed">
                   For an accurate carbon estimate, upload at least one photo (or a short video frame) covering each
                   area below. Tag each file using the dropdown after you upload it.
                 </p>
@@ -395,13 +395,13 @@ export default function NewAuditPage() {
                         {done ? (
                           <CheckCircle2 className="h-4 w-4 text-emerald-500 mt-0.5 shrink-0" aria-hidden="true" />
                         ) : (
-                          <Circle className="h-4 w-4 text-slate-300 mt-0.5 shrink-0" aria-hidden="true" />
+                          <Circle className="h-4 w-4 text-slate-600 mt-0.5 shrink-0" aria-hidden="true" />
                         )}
                         <div>
-                          <p className={cn('text-sm font-medium', done ? 'text-slate-700' : 'text-slate-900')}>
+                          <p className={cn('text-sm font-medium', done ? 'text-slate-400' : 'text-slate-100')}>
                             {r.label}
                           </p>
-                          <p className="text-xs text-slate-400">{r.hint}</p>
+                          <p className="text-xs text-slate-500">{r.hint}</p>
                         </div>
                       </li>
                     )
@@ -416,7 +416,7 @@ export default function NewAuditPage() {
                 aria-label="Upload zone — click or press Enter to select photos or video"
                 className={cn(
                   'rounded-xl border-2 border-dashed p-10 text-center transition-colors cursor-pointer',
-                  dragging ? 'border-emerald-500 bg-emerald-50' : 'border-slate-300 hover:border-slate-400'
+                  dragging ? 'border-emerald-500 bg-emerald-500/10' : 'border-white/10 hover:border-white/20'
                 )}
                 onDragOver={(e) => { e.preventDefault(); setDragging(true) }}
                 onDragLeave={() => setDragging(false)}
@@ -438,11 +438,11 @@ export default function NewAuditPage() {
                   className="hidden"
                   onChange={(e) => addFiles(Array.from(e.target.files ?? []))}
                 />
-                <Upload className="mx-auto h-10 w-10 text-slate-300 mb-3" aria-hidden="true" />
-                <p className="text-sm font-medium text-slate-700">
-                  Drop photos here or <span className="text-emerald-600">click to browse</span>
+                <Upload className="mx-auto h-10 w-10 text-slate-600 mb-3" aria-hidden="true" />
+                <p className="text-sm font-medium text-slate-300">
+                  Drop photos here or <span className="text-emerald-400">click to browse</span>
                 </p>
-                <p className="text-xs text-slate-400 mt-1">
+                <p className="text-xs text-slate-500 mt-1">
                   JPEG, PNG, WEBP, MP4. Cover all areas in the checklist above: windows, doors, walls, vents,
                   HVAC system, and exterior.
                 </p>
@@ -452,27 +452,27 @@ export default function NewAuditPage() {
               {files.length > 0 && (
                 <div className="space-y-3">
                   {files.map((f) => (
-                    <div key={f.id} className="flex items-center gap-3 rounded-lg border border-slate-200 p-3 bg-white">
-                      <div className="h-12 w-12 rounded-md overflow-hidden flex-shrink-0 bg-slate-100">
+                    <div key={f.id} className="flex items-center gap-3 rounded-lg border border-white/10 p-3 bg-white/[0.03]">
+                      <div className="h-12 w-12 rounded-md overflow-hidden flex-shrink-0 bg-white/5">
                         {f.file.type.startsWith('image/') ? (
                           // eslint-disable-next-line @next/next/no-img-element
                           <img src={f.preview} alt="" className="h-full w-full object-cover" />
                         ) : (
-                          <ImageIcon className="h-6 w-6 text-slate-400 m-3" />
+                          <ImageIcon className="h-6 w-6 text-slate-500 m-3" />
                         )}
                       </div>
                       <div className="flex-1 min-w-0">
-                        <p className="text-sm font-medium text-slate-800 truncate">{f.file.name}</p>
-                        <p className="text-xs text-slate-400">{(f.file.size / 1024 / 1024).toFixed(1)} MB</p>
-                        {f.error && <p className="text-xs text-red-500 mt-0.5">{f.error}</p>}
+                        <p className="text-sm font-medium text-slate-200 truncate">{f.file.name}</p>
+                        <p className="text-xs text-slate-500">{(f.file.size / 1024 / 1024).toFixed(1)} MB</p>
+                        {f.error && <p className="text-xs text-red-400 mt-0.5">{f.error}</p>}
                       </div>
                       <select
                         value={f.zone}
                         onChange={(e) => setFileZone(f.id, e.target.value as Zone)}
-                        className="text-xs border border-slate-200 rounded-md px-2 py-1.5 bg-white text-slate-700 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                        className="text-xs border border-white/10 rounded-md px-2 py-1.5 bg-white/5 text-slate-300 focus:outline-none focus:ring-2 focus:ring-emerald-500"
                       >
                         {ZONES.map((z) => (
-                          <option key={z} value={z}>{ZONE_LABELS[z]}</option>
+                          <option key={z} value={z} className="bg-[#0f172a] text-slate-200">{ZONE_LABELS[z]}</option>
                         ))}
                       </select>
                       {f.uploading ? (
@@ -483,7 +483,7 @@ export default function NewAuditPage() {
                         <button
                           onClick={() => removeFile(f.id)}
                           aria-label={`Remove ${f.file.name}`}
-                          className="text-slate-400 hover:text-red-500 transition-colors flex-shrink-0"
+                          className="text-slate-500 hover:text-red-400 transition-colors flex-shrink-0"
                         >
                           <X className="h-4 w-4" aria-hidden="true" />
                         </button>
@@ -495,7 +495,7 @@ export default function NewAuditPage() {
 
               {/* Missing-photo warning */}
               {missingRequired.length > 0 && (
-                <div className="rounded-lg bg-amber-50 border border-amber-200 px-4 py-3 text-sm text-amber-800 flex gap-3">
+                <div className="rounded-lg bg-amber-500/10 border border-amber-500/20 px-4 py-3 text-sm text-amber-300 flex gap-3">
                   <AlertTriangle className="h-5 w-5 text-amber-500 shrink-0 mt-0.5" aria-hidden="true" />
                   <div className="space-y-2">
                     <p>
@@ -503,12 +503,12 @@ export default function NewAuditPage() {
                       {missingRequired.map((r) => r.label).join(', ')}.
                       Warning: if you don&rsquo;t upload everything, you won&rsquo;t get a proper output.
                     </p>
-                    <label className="flex items-center gap-2 text-xs font-medium text-amber-900 cursor-pointer">
+                    <label className="flex items-center gap-2 text-xs font-medium text-amber-200 cursor-pointer">
                       <input
                         type="checkbox"
                         checked={ackMissing}
                         onChange={(e) => setAckMissing(e.target.checked)}
-                        className="h-3.5 w-3.5 rounded border-amber-300 text-emerald-600 focus:ring-emerald-500"
+                        className="h-3.5 w-3.5 rounded border-amber-500/40 bg-white/5 text-emerald-600 focus:ring-emerald-500"
                       />
                       Continue anyway — I understand the results may be inaccurate
                     </label>
@@ -534,7 +534,7 @@ export default function NewAuditPage() {
           {step === 2 && (
             <div className="space-y-6">
               <Card>
-                <h3 className="text-base font-semibold text-slate-900 mb-4 flex items-center gap-2">
+                <h3 className="text-base font-semibold text-slate-100 mb-4 flex items-center gap-2">
                   <Building2 className="h-5 w-5 text-emerald-500" /> Building Summary
                 </h3>
                 <dl className="grid grid-cols-2 gap-x-8 gap-y-3 text-sm">
@@ -549,15 +549,15 @@ export default function NewAuditPage() {
                     ['Photos', `${files.length} file${files.length !== 1 ? 's' : ''}`],
                   ].map(([label, value]) => (
                     <div key={label}>
-                      <dt className="text-slate-500">{label}</dt>
-                      <dd className="font-medium text-slate-900">{value}</dd>
+                      <dt className="text-slate-400">{label}</dt>
+                      <dd className="font-medium text-slate-100">{value}</dd>
                     </div>
                   ))}
                 </dl>
               </Card>
 
               {globalError && (
-                <div className="rounded-lg bg-red-50 border border-red-200 px-4 py-3 text-sm text-red-700">
+                <div className="rounded-lg bg-red-500/10 border border-red-500/20 px-4 py-3 text-sm text-red-300">
                   {globalError}
                 </div>
               )}

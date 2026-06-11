@@ -134,7 +134,7 @@ export default function ResultsPage() {
         <ContentColumn>
           <div className="flex-1 flex flex-col items-center justify-center gap-4 text-center p-8">
             <AlertCircle className="h-10 w-10 text-red-400" />
-            <p className="text-slate-600">{error || 'Results unavailable'}</p>
+            <p className="text-slate-400">{error || 'Results unavailable'}</p>
             <Link href="/dashboard"><Button variant="outline">Back to Dashboard</Button></Link>
           </div>
         </ContentColumn>
@@ -144,7 +144,9 @@ export default function ResultsPage() {
 
   const { audit, results, problemAreas, roadmapItems, energyBreakdown } = data
   const score = results.carbon_score
-  const grade = scoreToGrade(score)
+  // carbonScore is 0-100 where HIGHER = WORSE; scoreToGrade expects the
+  // opposite (higher = better), so invert before grading.
+  const grade = scoreToGrade(100 - score)
 
   // Adapt DB rows into chart-friendly shapes
   const breakdownForChart: BreakdownChartItem[] = energyBreakdown.map((e, i) => ({
@@ -217,17 +219,17 @@ export default function ResultsPage() {
             </div>
 
             {/* Score hero */}
-            <div className="rounded-2xl border border-slate-200 bg-white shadow-sm p-6">
+            <div className="rounded-2xl border border-white/5 bg-white/[0.03] p-6">
               <div className="flex flex-col md:flex-row items-start md:items-center gap-6">
                 <ScoreRing score={score} size={140} label="Carbon Score" />
                 <div className="flex-1">
                   <div className="flex items-center gap-3 mb-2">
-                    <h2 className="text-3xl font-black text-slate-900">Grade {grade}</h2>
+                    <h2 className="text-3xl font-black text-white">Grade {grade}</h2>
                     <Badge variant={score < 40 ? 'success' : score < 70 ? 'warning' : 'danger'}>
                       {score < 40 ? 'Efficient' : score < 70 ? 'Needs Work' : 'High Risk'}
                     </Badge>
                   </div>
-                  <p className="text-slate-500 text-sm mb-5 max-w-lg leading-relaxed">
+                  <p className="text-slate-400 text-sm mb-5 max-w-lg leading-relaxed">
                     {score < 40
                       ? 'This building performs well. Minor optimisations can push it to net-zero.'
                       : score < 70
@@ -253,7 +255,7 @@ export default function ResultsPage() {
             </div>
 
             {/* Tabs */}
-            <div className="border-b border-slate-200 no-print">
+            <div className="border-b border-white/10 no-print">
               <nav aria-label="Results sections" className="flex gap-1">
                 {TABS.map((t) => (
                   <button
@@ -264,8 +266,8 @@ export default function ResultsPage() {
                     className={cn(
                       'px-4 py-2.5 text-sm font-medium border-b-2 transition-colors',
                       tab === t
-                        ? 'border-emerald-500 text-emerald-600'
-                        : 'border-transparent text-slate-500 hover:text-slate-700'
+                        ? 'border-emerald-500 text-emerald-400'
+                        : 'border-transparent text-slate-500 hover:text-slate-300'
                     )}
                   >
                     {t}
@@ -282,16 +284,16 @@ export default function ResultsPage() {
                   carbonScore={score}
                   buildYear={audit.build_year}
                 />
-                <div className="rounded-2xl border border-slate-200 bg-white shadow-sm p-6">
-                  <h3 className="text-sm font-semibold text-slate-900 mb-4 flex items-center gap-2">
+                <div className="rounded-2xl border border-white/5 bg-white/[0.03] p-6">
+                  <h3 className="text-sm font-semibold text-slate-100 mb-4 flex items-center gap-2">
                     <BarChart3 className="h-4 w-4 text-emerald-500" /> Energy Breakdown
                   </h3>
                   {breakdownForChart.length > 0
                     ? <EnergyBreakdownChart data={breakdownForChart} />
-                    : <p className="text-slate-400 text-sm">No breakdown data available.</p>}
+                    : <p className="text-slate-500 text-sm">No breakdown data available.</p>}
                 </div>
-                <div className="rounded-2xl border border-slate-200 bg-white shadow-sm p-6">
-                  <h3 className="text-sm font-semibold text-slate-900 mb-4 flex items-center gap-2">
+                <div className="rounded-2xl border border-white/5 bg-white/[0.03] p-6">
+                  <h3 className="text-sm font-semibold text-slate-100 mb-4 flex items-center gap-2">
                     <Zap className="h-4 w-4 text-emerald-500" /> Energy by Category
                   </h3>
                   {breakdownForChart.length > 0 ? (
@@ -299,18 +301,18 @@ export default function ResultsPage() {
                       {breakdownForChart.map((e) => (
                         <div key={e.category} className="flex items-center gap-3">
                           <div className="h-3 w-3 rounded-full shrink-0" style={{ background: e.color }} />
-                          <span className="flex-1 text-sm text-slate-700">{e.category}</span>
-                          <div className="flex-1 h-1.5 bg-slate-100 rounded-full overflow-hidden">
+                          <span className="flex-1 text-sm text-slate-300">{e.category}</span>
+                          <div className="flex-1 h-1.5 bg-white/10 rounded-full overflow-hidden">
                             <div className="h-full rounded-full" style={{ width: `${e.percentage}%`, background: e.color }} />
                           </div>
-                          <span className="text-xs font-semibold text-slate-500 w-10 text-right">
+                          <span className="text-xs font-semibold text-slate-400 w-10 text-right">
                             {e.percentage.toFixed(0)}%
                           </span>
                         </div>
                       ))}
                     </div>
                   ) : (
-                    <p className="text-slate-400 text-sm">No data available.</p>
+                    <p className="text-slate-500 text-sm">No data available.</p>
                   )}
                 </div>
               </div>
@@ -320,11 +322,11 @@ export default function ResultsPage() {
             {tab === 'Problem Areas' && (
               <div className="space-y-3">
                 {problemAreas.length === 0 ? (
-                  <div className="flex items-center gap-3 rounded-2xl border border-emerald-100 bg-emerald-50 p-5">
-                    <Leaf className="h-6 w-6 text-emerald-500 shrink-0" />
+                  <div className="flex items-center gap-3 rounded-2xl border border-emerald-500/20 bg-emerald-500/10 p-5">
+                    <Leaf className="h-6 w-6 text-emerald-400 shrink-0" />
                     <div>
-                      <p className="text-sm font-semibold text-emerald-800">No significant issues found</p>
-                      <p className="text-xs text-emerald-600 mt-0.5">This building appears to be in good condition.</p>
+                      <p className="text-sm font-semibold text-emerald-300">No significant issues found</p>
+                      <p className="text-xs text-emerald-400/80 mt-0.5">This building appears to be in good condition.</p>
                     </div>
                   </div>
                 ) : (
@@ -332,28 +334,28 @@ export default function ResultsPage() {
                     const sev = SEVERITY_COLORS[p.severity]
                     const icon = ({ critical: '🔴', high: '🟠', medium: '🟡', low: '🟢' } as Record<string, string>)[p.severity] ?? '⚪'
                     return (
-                      <div key={p.id} className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm hover:shadow-md transition-shadow">
+                      <div key={p.id} className="rounded-2xl border border-white/5 bg-white/[0.03] p-5 hover:bg-white/[0.05] transition-colors">
                         <div className="flex items-start justify-between gap-4 mb-2">
                           <div className="flex items-center gap-2">
                             <span className="text-base leading-none">{icon}</span>
-                            <h4 className="text-sm font-semibold text-slate-900">{p.title}</h4>
+                            <h4 className="text-sm font-semibold text-slate-100">{p.title}</h4>
                           </div>
                           <span className={cn('text-xs font-bold px-2.5 py-1 rounded-full shrink-0', sev?.bg, sev?.text)}>
                             {p.severity.toUpperCase()}
                           </span>
                         </div>
-                        <p className="text-sm text-slate-500 mb-3 leading-relaxed">{p.description}</p>
-                        <div className="flex flex-wrap gap-4 text-xs text-slate-400">
+                        <p className="text-sm text-slate-400 mb-3 leading-relaxed">{p.description}</p>
+                        <div className="flex flex-wrap gap-4 text-xs text-slate-500">
                           {p.location && (
                             <span className="flex items-center gap-1">
-                              📍 <strong className="text-slate-600">{p.location}</strong>
+                              📍 <strong className="text-slate-300">{p.location}</strong>
                             </span>
                           )}
                           {(p.estimated_loss_kwh ?? 0) > 0 && (
-                            <span>Est. loss: <strong className="text-slate-600">{formatNumber(p.estimated_loss_kwh ?? 0)} kWh/yr</strong></span>
+                            <span>Est. loss: <strong className="text-slate-300">{formatNumber(p.estimated_loss_kwh ?? 0)} kWh/yr</strong></span>
                           )}
                           {((p.fix_cost_min ?? 0) > 0 || (p.fix_cost_max ?? 0) > 0) && (
-                            <span>Fix cost: <strong className="text-slate-600">{formatCurrency(p.fix_cost_min ?? 0)} – {formatCurrency(p.fix_cost_max ?? 0)}</strong></span>
+                            <span>Fix cost: <strong className="text-slate-300">{formatCurrency(p.fix_cost_min ?? 0)} – {formatCurrency(p.fix_cost_max ?? 0)}</strong></span>
                           )}
                         </div>
                       </div>
@@ -367,8 +369,8 @@ export default function ResultsPage() {
             {tab === 'Roadmap' && (
               <div className="space-y-6">
                 {roadmapForChart.length > 0 && (
-                  <div className="rounded-2xl border border-slate-200 bg-white shadow-sm p-6">
-                    <h3 className="text-sm font-semibold text-slate-900 mb-4 flex items-center gap-2">
+                  <div className="rounded-2xl border border-white/5 bg-white/[0.03] p-6">
+                    <h3 className="text-sm font-semibold text-slate-100 mb-4 flex items-center gap-2">
                       <TrendingDown className="h-4 w-4 text-emerald-500" /> CO₂ Savings by Action
                     </h3>
                     <CarbonSavingsChart data={roadmapForChart} />
@@ -376,20 +378,20 @@ export default function ResultsPage() {
                 )}
                 <div className="space-y-3">
                   {roadmapItems.map((r, i) => (
-                    <div key={r.id} className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm hover:shadow-md transition-shadow">
+                    <div key={r.id} className="rounded-2xl border border-white/5 bg-white/[0.03] p-5 hover:bg-white/[0.05] transition-colors">
                       <div className="flex items-start gap-4">
                         <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-gradient-to-br from-emerald-400 to-emerald-600 text-white text-xs font-black shrink-0 shadow-sm">
                           {i + 1}
                         </div>
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-2 mb-1 flex-wrap">
-                            <h4 className="text-sm font-semibold text-slate-900">{r.title}</h4>
+                            <h4 className="text-sm font-semibold text-slate-100">{r.title}</h4>
                             <Badge variant={r.effort === 'quick' ? 'success' : r.effort === 'medium' ? 'warning' : 'neutral'}>
                               {r.effort}
                             </Badge>
                           </div>
-                          <p className="text-sm text-slate-500 mb-3 leading-relaxed">{r.description}</p>
-                          <div className="flex flex-wrap gap-4 text-xs text-slate-400">
+                          <p className="text-sm text-slate-400 mb-3 leading-relaxed">{r.description}</p>
+                          <div className="flex flex-wrap gap-4 text-xs text-slate-500">
                             {(r.cost_min ?? 0) > 0 && (
                               <span className="flex items-center gap-1">
                                 <DollarSign className="h-3 w-3" />
@@ -417,11 +419,11 @@ export default function ResultsPage() {
 
             {/* Contractor Brief */}
             {tab === 'Contractor Brief' && (
-              <div className="rounded-2xl border border-slate-200 bg-white shadow-sm overflow-hidden">
-                <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100 bg-slate-50 no-print">
+              <div className="rounded-2xl border border-white/5 bg-white/[0.03] overflow-hidden">
+                <div className="flex items-center justify-between px-6 py-4 border-b border-white/5 bg-white/[0.02] no-print">
                   <div>
-                    <h3 className="text-sm font-semibold text-slate-900">Scope of Work Document</h3>
-                    <p className="text-xs text-slate-400 mt-0.5">Ready to paste into an email or contractor portal</p>
+                    <h3 className="text-sm font-semibold text-slate-100">Scope of Work Document</h3>
+                    <p className="text-xs text-slate-500 mt-0.5">Ready to paste into an email or contractor portal</p>
                   </div>
                   <div className="flex gap-2">
                     <Button
@@ -442,7 +444,7 @@ export default function ResultsPage() {
                     </Button>
                   </div>
                 </div>
-                <pre className="p-6 text-sm text-slate-700 whitespace-pre-wrap font-mono leading-loose overflow-auto max-h-[65vh] bg-white">
+                <pre className="p-6 text-sm text-slate-300 whitespace-pre-wrap font-mono leading-loose overflow-auto max-h-[65vh] bg-transparent">
                   {results.contractor_brief ?? 'No contractor brief generated.'}
                 </pre>
               </div>

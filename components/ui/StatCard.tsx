@@ -11,11 +11,11 @@ interface StatCardProps extends HTMLAttributes<HTMLDivElement> {
 }
 
 const accentStyles = {
-  emerald: 'bg-emerald-50 text-emerald-600',
-  blue: 'bg-blue-50 text-blue-600',
-  amber: 'bg-amber-50 text-amber-600',
-  red: 'bg-red-50 text-red-600',
-  slate: 'bg-slate-100 text-slate-600',
+  emerald: 'bg-emerald-500/10 text-emerald-400',
+  blue: 'bg-blue-500/10 text-blue-400',
+  amber: 'bg-amber-500/10 text-amber-400',
+  red: 'bg-red-500/10 text-red-400',
+  slate: 'bg-white/5 text-slate-400',
 };
 
 export function StatCard({
@@ -31,7 +31,7 @@ export function StatCard({
   return (
     <div
       className={cn(
-        'rounded-xl border border-slate-200 bg-white shadow-sm p-5 flex items-start gap-4',
+        'rounded-xl border border-white/5 bg-white/[0.03] p-5 flex items-start gap-4',
         className
       )}
       {...props}
@@ -47,18 +47,18 @@ export function StatCard({
         </span>
       )}
       <div className="min-w-0 flex-1">
-        <p className="text-sm font-medium text-slate-500 truncate">{label}</p>
-        <p className="mt-1 text-2xl font-bold text-slate-900 leading-tight">
+        <p className="text-sm font-medium text-slate-400 truncate">{label}</p>
+        <p className="mt-1 text-2xl font-bold text-white leading-tight">
           {value}
           {unit && (
-            <span className="ml-1 text-base font-medium text-slate-400">{unit}</span>
+            <span className="ml-1 text-base font-medium text-slate-500">{unit}</span>
           )}
         </p>
         {delta && (
           <p
             className={cn(
               'mt-1 text-xs font-medium',
-              delta.positive ? 'text-emerald-600' : 'text-red-500'
+              delta.positive ? 'text-emerald-400' : 'text-red-400'
             )}
           >
             {delta.positive ? '↓' : '↑'} {delta.value}
