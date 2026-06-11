@@ -1,8 +1,20 @@
 import Link from 'next/link'
 import {
-  Building2, Zap, Leaf, Shield, ArrowRight,
-  CheckCircle, BarChart3, Camera, FileText, ChevronRight,
+  Building2, Zap, Leaf, ArrowRight, CheckCircle, BarChart3, Camera, FileText,
+  ChevronRight, HeartPulse, Receipt as ReceiptIcon, Flame, Sprout,
 } from 'lucide-react'
+import { LiveEmissionsCounter } from '@/components/landing/LiveEmissionsCounter'
+import { EarthFeverChart } from '@/components/landing/EarthFeverChart'
+import { EverydayConfessions } from '@/components/landing/EverydayConfessions'
+import { PlanetReceipt } from '@/components/landing/PlanetReceipt'
+import { VanishingVoices } from '@/components/landing/VanishingVoices'
+import {
+  VineEdge,
+  BurnDivider,
+  RegrowthDivider,
+  LeafyBackdrop,
+  BurningBackdrop,
+} from '@/components/landing/OrganicDecorations'
 
 const FEATURES = [
   {
@@ -47,7 +59,7 @@ const accentClasses: Record<string, { bg: string; icon: string; ring: string }> 
 
 export default function LandingPage() {
   return (
-    <div className="min-h-screen bg-white text-slate-900 antialiased">
+    <div className="min-h-screen bg-white text-slate-900 antialiased overflow-x-hidden">
 
       {/* ── Nav ── */}
       <header className="fixed top-0 inset-x-0 z-40 bg-white/80 backdrop-blur-md border-b border-slate-100">
@@ -59,6 +71,7 @@ export default function LandingPage() {
             <span className="font-black text-lg tracking-tight text-slate-900">ThermaMorph</span>
           </div>
           <nav className="hidden md:flex items-center gap-8 text-sm text-slate-500 font-medium">
+            <a href="#vitals" className="hover:text-slate-900 transition-colors">The data</a>
             <a href="#how" className="hover:text-slate-900 transition-colors">How it works</a>
             <a href="#features" className="hover:text-slate-900 transition-colors">Features</a>
           </nav>
@@ -79,22 +92,26 @@ export default function LandingPage() {
         </div>
       </header>
 
-      {/* ── Hero ── */}
-      <section className="pt-32 pb-24 px-6 relative overflow-hidden">
-        {/* Background decoration */}
+      {/* ══════════════════════════════════════════════════════════════════
+          HERO — leafy, alive, framed by a real canopy. The live counter
+          (Idea 1) sits front and centre: the number that never stops.
+          ══════════════════════════════════════════════════════════════════ */}
+      <LeafyBackdrop className="pt-32 pb-20 px-6">
+        <VineEdge side="left" />
+        <VineEdge side="right" />
+
         <div className="pointer-events-none absolute inset-0 overflow-hidden">
-          <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[900px] h-[500px] rounded-full bg-gradient-to-b from-emerald-50 to-transparent opacity-80 blur-3xl" />
-          <div className="absolute top-20 right-0 w-64 h-64 rounded-full bg-blue-50 blur-3xl opacity-60" />
+          <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[900px] h-[500px] rounded-full bg-gradient-to-b from-emerald-100/70 to-transparent opacity-80 blur-3xl" />
         </div>
 
-        <div className="relative mx-auto max-w-4xl text-center">
+        <section className="relative mx-auto max-w-4xl text-center">
           <div className="inline-flex items-center gap-2 rounded-full bg-emerald-50 border border-emerald-200 px-4 py-1.5 text-xs font-semibold text-emerald-700 mb-6">
             <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
             Powered by ASHRAE 90.1 standards
           </div>
 
           <h1 className="text-5xl md:text-6xl font-black leading-[1.05] tracking-tight text-slate-900 mb-6">
-            Understand your building's<br />
+            Understand your building&rsquo;s<br />
             <span className="bg-gradient-to-r from-emerald-500 to-teal-500 bg-clip-text text-transparent">
               carbon footprint
             </span>
@@ -105,6 +122,11 @@ export default function LandingPage() {
             Get a professional carbon score, energy analysis, and a prioritised
             decarbonisation roadmap — in minutes, not months.
           </p>
+
+          {/* IDEA 1 — THE REAL-TIME RECKONING */}
+          <div className="mb-10">
+            <LiveEmissionsCounter />
+          </div>
 
           <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
             <Link
@@ -130,11 +152,11 @@ export default function LandingPage() {
               </span>
             ))}
           </div>
-        </div>
-      </section>
+        </section>
+      </LeafyBackdrop>
 
       {/* ── Dashboard preview ── */}
-      <section className="pb-24 px-6">
+      <section className="pb-24 px-6 pt-20 bg-white relative z-10">
         <div className="mx-auto max-w-5xl">
           <div className="rounded-3xl bg-gradient-to-br from-slate-900 to-slate-800 p-8 shadow-2xl shadow-slate-900/30 overflow-hidden relative">
             {/* Glow dots */}
@@ -181,20 +203,130 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* ── How it works ── */}
-      <section id="how" className="py-24 px-6 bg-slate-50/60">
-        <div className="mx-auto max-w-5xl">
-          <div className="text-center mb-14">
-            <p className="text-xs font-bold uppercase tracking-widest text-emerald-600 mb-3">The process</p>
-            <h2 className="text-4xl font-black text-slate-900">Four steps to clarity</h2>
-          </div>
+      {/* ══════════════════════════════════════════════════════════════════
+          IDEA 4 — EARTH'S FEVER CHART
+          ══════════════════════════════════════════════════════════════════ */}
+      <section id="vitals" className="py-24 px-6 bg-slate-950 relative overflow-hidden">
+        <div className="pointer-events-none absolute inset-0 opacity-40">
+          <div className="absolute top-1/3 left-1/4 h-72 w-72 rounded-full bg-emerald-500/10 blur-3xl" />
+          <div className="absolute bottom-0 right-1/4 h-72 w-72 rounded-full bg-red-500/10 blur-3xl" />
+        </div>
+        <div className="relative mx-auto max-w-4xl text-center mb-12">
+          <p className="flex items-center justify-center gap-2 text-xs font-bold uppercase tracking-widest text-emerald-400 mb-3">
+            <HeartPulse className="h-3.5 w-3.5" /> The diagnosis
+          </p>
+          <h2 className="text-3xl sm:text-4xl font-black text-white mb-4">
+            The Earth has a chart too.
+          </h2>
+          <p className="text-slate-400 leading-relaxed max-w-2xl mx-auto">
+            Doctors track vitals because a body running a fever for fifty straight years — every
+            decade hotter than the last — is telling you something. Below is the planet&rsquo;s
+            chart, drawn from NASA&rsquo;s own surface temperature record. The earth isn&rsquo;t
+            dying. It&rsquo;s sick. And right now, we&rsquo;re the doctors who keep walking past
+            the chart at the foot of the bed.
+          </p>
+        </div>
+        <div className="relative">
+          <EarthFeverChart />
+        </div>
+      </section>
 
+      {/* ══════════════════════════════════════════════════════════════════
+          IDEA 2 — EVERYDAY CONFESSIONS
+          ══════════════════════════════════════════════════════════════════ */}
+      <LeafyBackdrop className="py-24 px-6" canopy={false}>
+        <div className="relative mx-auto max-w-3xl text-center mb-12">
+          <p className="text-xs font-bold uppercase tracking-widest text-emerald-600 mb-3">The everyday math</p>
+          <h2 className="text-3xl sm:text-4xl font-black text-slate-900 mb-4">
+            Ordinary mornings, real numbers
+          </h2>
+          <p className="text-slate-500 leading-relaxed">
+            None of this needs a power plant or a factory. It&rsquo;s already happening in your
+            kitchen, your commute, your living room — small numbers that, multiplied across a few
+            billion mornings, stop being small. Read these slowly. They&rsquo;re about today.
+          </p>
+        </div>
+        <div className="relative">
+          <EverydayConfessions />
+        </div>
+      </LeafyBackdrop>
+
+      {/* The page begins to burn. */}
+      <BurnDivider />
+
+      {/* ══════════════════════════════════════════════════════════════════
+          IDEA 3 — THE RECEIPT
+          ══════════════════════════════════════════════════════════════════ */}
+      <BurningBackdrop className="py-24 px-6">
+        <div className="relative mx-auto max-w-3xl text-center mb-12">
+          <p className="flex items-center justify-center gap-2 text-xs font-bold uppercase tracking-widest text-orange-400 mb-3">
+            <ReceiptIcon className="h-3.5 w-3.5" /> The bill
+          </p>
+          <h2 className="text-3xl sm:text-4xl font-black text-white mb-4">
+            Somebody has to pay for this.
+          </h2>
+          <p className="text-slate-400 leading-relaxed">
+            Every year, the average person on Earth charges roughly 4.7 tonnes of CO&#8322; to the
+            atmosphere&rsquo;s tab — and never sees an invoice. So we printed one. Read it the way
+            you&rsquo;d read any bill you didn&rsquo;t expect: line by line, then the total.
+          </p>
+        </div>
+        <div className="relative">
+          <PlanetReceipt />
+        </div>
+      </BurningBackdrop>
+
+      {/* ══════════════════════════════════════════════════════════════════
+          IDEA 5 — VOICE OF THE VANISHING
+          ══════════════════════════════════════════════════════════════════ */}
+      <BurningBackdrop className="py-24 px-6 border-t border-white/5">
+        <div className="relative mx-auto max-w-3xl text-center mb-12">
+          <p className="flex items-center justify-center gap-2 text-xs font-bold uppercase tracking-widest text-rose-400 mb-3">
+            <Flame className="h-3.5 w-3.5" /> The testimony
+          </p>
+          <h2 className="text-3xl sm:text-4xl font-black text-white mb-4">
+            Some things are trying to tell us something.
+          </h2>
+          <p className="text-slate-400 leading-relaxed">
+            Glaciers, rainforests, and reefs don&rsquo;t get a vote, a microphone, or a seat at any
+            climate summit. They only have their numbers — measured, year after year, by people
+            who climb mountains and dive reefs to record them. So we gave those numbers a voice.
+          </p>
+        </div>
+        <div className="relative">
+          <VanishingVoices />
+        </div>
+      </BurningBackdrop>
+
+      {/* The fire stops. The ground can still regrow. */}
+      <RegrowthDivider />
+
+      {/* ══════════════════════════════════════════════════════════════════
+          THE TURN — from diagnosis to action
+          ══════════════════════════════════════════════════════════════════ */}
+      <LeafyBackdrop className="py-24 px-6" canopy={false}>
+        <div className="relative mx-auto max-w-3xl text-center mb-14">
+          <p className="flex items-center justify-center gap-2 text-xs font-bold uppercase tracking-widest text-emerald-600 mb-3">
+            <Sprout className="h-3.5 w-3.5" /> The turn
+          </p>
+          <h2 className="text-3xl sm:text-4xl font-black text-slate-900 mb-4">
+            None of this is fixed. All of it is fixable.
+          </h2>
+          <p className="text-slate-500 leading-relaxed max-w-2xl mx-auto">
+            Scorched ground regrows. Buildings get retrofitted. Grids get cleaner. The fastest way
+            to reduce a building&rsquo;s share of all those numbers above is to actually understand
+            where its emissions come from — and that&rsquo;s exactly what ThermaMorph does, in
+            under five minutes.
+          </p>
+        </div>
+
+        {/* ── How it works ── */}
+        <div id="how" className="relative mx-auto max-w-5xl">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
             {HOW_IT_WORKS.map(({ step, title, desc }, i) => (
               <div key={step} className="relative">
-                {/* Connector line — hidden on mobile */}
                 {i < HOW_IT_WORKS.length - 1 && (
-                  <div className="hidden lg:block absolute top-6 left-[calc(100%_-_12px)] w-full h-px border-t-2 border-dashed border-slate-200 z-0" />
+                  <div className="hidden lg:block absolute top-6 left-[calc(100%_-_12px)] w-full h-px border-t-2 border-dashed border-emerald-200 z-0" />
                 )}
                 <div className="relative z-10 bg-white rounded-2xl border border-slate-200 p-6 shadow-sm h-full">
                   <div className="inline-flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-50 text-emerald-600 text-sm font-black mb-4">
@@ -207,7 +339,7 @@ export default function LandingPage() {
             ))}
           </div>
         </div>
-      </section>
+      </LeafyBackdrop>
 
       {/* ── Features ── */}
       <section id="features" className="py-24 px-6">
@@ -255,8 +387,8 @@ export default function LandingPage() {
       </section>
 
       {/* ── CTA ── */}
-      <section className="py-24 px-6">
-        <div className="mx-auto max-w-2xl text-center">
+      <LeafyBackdrop className="py-24 px-6">
+        <div className="relative mx-auto max-w-2xl text-center">
           <div className="inline-flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-emerald-400 to-emerald-600 shadow-lg shadow-emerald-200 mb-6">
             <Building2 className="h-7 w-7 text-white" />
           </div>
@@ -275,7 +407,7 @@ export default function LandingPage() {
             <ChevronRight className="h-4 w-4 group-hover:translate-x-0.5 transition-transform" />
           </Link>
         </div>
-      </section>
+      </LeafyBackdrop>
 
       {/* ── Footer ── */}
       <footer className="border-t border-slate-100 py-8 px-6">
