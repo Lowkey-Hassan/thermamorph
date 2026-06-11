@@ -1,5 +1,6 @@
 'use client'
 
+import { useEffect, useRef, useState } from 'react'
 import { Mountain, TreePine, Waves, Quote } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { VANISHING_VOICES, type VanishingVoice } from '@/lib/landing/climate-data'
@@ -10,29 +11,7 @@ const ICONS: Record<string, typeof Mountain> = {
   coral: Waves,
 }
 
-const VOICE_THEME: Record<string, { glow: string; ring: string; text: string; bg: string; bar: string }> = {
-  gangotri: {
-    glow: 'rgba(56,189,248,0.18)',
-    ring: 'ring-sky-400/30',
-    text: 'text-sky-300',
-    bg: 'bg-sky-500/10',
-    bar: 'from-sky-400 to-cyan-300',
-  },
-  amazon: {
-    glow: 'rgba(52,211,153,0.18)',
-    ring: 'ring-emerald-400/30',
-    text: 'text-emerald-300',
-    bg: 'bg-emerald-500/10',
-    bar: 'from-emerald-400 to-lime-300',
-  },
-  coral: {
-    glow: 'rgba(251,113,133,0.18)',
-    ring: 'ring-rose-400/30',
-    text: 'text-rose-300',
-    bg: 'bg-rose-500/10',
-    bar: 'from-orange-400 to-rose-400',
-  },
-}
+const TYPE_SPEED_MS = 22
 
 /**
  * IDEA 5 — VOICE OF THE VANISHING
@@ -42,69 +21,99 @@ const VOICE_THEME: Record<string, { glow: string; ring: string; text: string; bg
  * delivered as a dying voice would speak: short, plain, factual. Every
  * statistic is sourced (see lib/landing/climate-data.ts). The grammar
  * stays calm. That's what makes it land.
+ *
+ * Restyled to pure black, italic Georgia serif, no colour glow — and each
+ * block types itself out, line by line, the moment it scrolls into view,
+ * ending with a blinking cursor. Soft white text. Devastating.
  */
 export function VanishingVoices() {
   return (
-    <div className="mx-auto max-w-3xl space-y-6">
-      {VANISHING_VOICES.map((voice: VanishingVoice, i) => {
-        const Icon = ICONS[voice.id] ?? Quote
-        const theme = VOICE_THEME[voice.id]
-        return (
-          <div
-            key={voice.id}
-            className={cn(
-              'relative overflow-hidden rounded-2xl border border-white/10 bg-slate-900/80 backdrop-blur-sm p-6 sm:p-8 animate-fade-in-up',
-              `animate-delay-${Math.min((i + 1) * 100, 300)}`
-            )}
-            style={{ boxShadow: `0 0 60px -15px ${theme.glow}` }}
-          >
-            {/* Ambient breathing glow */}
-            <div
-              className="pointer-events-none absolute -top-24 -right-24 h-64 w-64 rounded-full blur-3xl animate-voice-breathe"
-              style={{ background: theme.glow }}
-            />
-            <div className={cn('absolute inset-y-0 left-0 w-1 bg-gradient-to-b', theme.bar)} />
+    <div className="mx-auto flex max-w-3xl flex-col gap-16 sm:gap-24">
+      {VANISHING_VOICES.map((voice) => (
+        <VoiceBlock key={voice.id} voice={voice} />
+      ))}
+    </div>
+  )
+}
 
-            <div className="relative flex items-start gap-4 mb-4">
-              <div className={cn('flex h-11 w-11 shrink-0 items-center justify-center rounded-xl ring-1', theme.bg, theme.ring)}>
-                <Icon className={cn('h-5 w-5', theme.text)} />
-              </div>
-              <div className="min-w-0">
-                <p className="text-base font-bold text-white">{voice.name}</p>
-                <p className="text-xs text-slate-400">{voice.location}</p>
-              </div>
-              <div className={cn('ml-auto shrink-0 rounded-full px-3 py-1 text-[11px] font-bold tabular-nums', theme.bg, theme.text)}>
-                {voice.stat}
-              </div>
-            </div>
+function VoiceBlock({ voice }: { voice: VanishingVoice }) {
+  const Icon = ICONS[voice.id] ?? Quote
+  const ref = useRef<HTMLDivElement>(null)
+  const [started, setStarted] = useState(false)
+  const [lineIndex, setLineIndex] = useState(0)
+  const [charCount, setCharCount] = useState(0)
 
-            <div className="relative space-y-2.5 mb-4">
-              {voice.quote.map((line, idx) => (
-                <p
-                  key={idx}
-                  className={cn(
-                    'text-[15px] sm:text-base leading-relaxed text-slate-200 italic',
-                    idx === 0 && 'font-semibold not-italic text-white'
-                  )}
-                >
-                  {idx === voice.quote.length - 1 ? (
-                    <>
-                      {line}
-                      <span className="animate-caret-blink text-slate-500 not-italic">|</span>
-                    </>
-                  ) : (
-                    `“${line}”`
-                  )}
-                </p>
-              ))}
-            </div>
+  useEffect(() => {
+    const el = ref.current
+    if (!el) return
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            setStarted(true)
+            observer.unobserve(entry.target)
+          }
+        })
+      },
+      { threshold: 0.4 }
+    )
+    observer.observe(el)
+    return () => observer.disconnect()
+  }, [])
 
-            <p className="relative text-[11px] text-slate-500 leading-relaxed border-t border-white/10 pt-3">
-              Source: {voice.source}
+  useEffect(() => {
+    if (!started || lineIndex >= voice.quote.length) return
+    const currentLine = voice.quote[lineIndex]
+    const timeout = setTimeout(() => {
+      if (charCount < currentLine.length) {
+        setCharCount((c) => c + 1)
+      } else {
+        setLineIndex((l) => l + 1)
+        setCharCount(0)
+      }
+    }, TYPE_SPEED_MS)
+    return () => clearTimeout(timeout)
+  }, [started, lineIndex, charCount, voice.quote])
+
+  const done = lineIndex >= voice.quote.length
+
+  return (
+    <div ref={ref} data-burst className="text-left">
+      <div className="mb-6 flex items-center gap-3">
+        <Icon className="h-4 w-4 text-[var(--tm-ash)]" />
+        <p className="eyebrow" style={{ fontSize: '0.7rem' }}>
+          {voice.name} &mdash; {voice.location}
+        </p>
+        <span className="mono ml-auto shrink-0 text-[11px] text-[var(--tm-orange)]">{voice.stat}</span>
+      </div>
+
+      <div className="space-y-3">
+        {voice.quote.map((line, idx) => {
+          const isActive = idx === lineIndex
+          const isPast = idx < lineIndex || done
+          const text = isPast ? line : isActive ? line.slice(0, charCount) : ''
+          const showCursor = isActive || (done && idx === voice.quote.length - 1)
+
+          return (
+            <p
+              key={idx}
+              className={cn(
+                'voice-text',
+                idx === 0 ? 'font-semibold not-italic' : 'italic'
+              )}
+              style={{ fontFamily: 'Georgia, serif', fontSize: 'clamp(1.1rem, 2.6vw, 1.65rem)', lineHeight: 1.85, color: '#f1efe9' }}
+            >
+              {idx === 0 && text ? text : idx === 0 ? '' : text ? `“${text}”` : ''}
+              {showCursor && <span className="tm-cursor">|</span>}
+              {!showCursor && !text ? ' ' : null}
             </p>
-          </div>
-        )
-      })}
+          )
+        })}
+      </div>
+
+      <p className="mono mt-5 border-t border-[#2c2925] pt-3 text-[11px] leading-relaxed text-[var(--tm-ash)]">
+        Source: {voice.source}
+      </p>
     </div>
   )
 }

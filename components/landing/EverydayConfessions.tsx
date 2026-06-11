@@ -1,7 +1,6 @@
 'use client'
 
 import { Coffee, Car, Snowflake, Plane, type LucideIcon } from 'lucide-react'
-import { cn } from '@/lib/utils'
 import { EVERYDAY_CONFESSIONS, type ConfessionItem } from '@/lib/landing/climate-data'
 
 const ICONS: Record<ConfessionItem['icon'], LucideIcon> = {
@@ -11,35 +10,6 @@ const ICONS: Record<ConfessionItem['icon'], LucideIcon> = {
   plane: Plane,
 }
 
-// Each confession nudges the visual tone one step further from green toward red —
-// a quiet version of the page's larger "leafy → burning" arc.
-const TONES = [
-  {
-    ring: 'ring-emerald-200',
-    badge: 'bg-emerald-50 text-emerald-600',
-    accent: 'text-emerald-600',
-    bar: 'from-emerald-400 to-emerald-500',
-  },
-  {
-    ring: 'ring-lime-200',
-    badge: 'bg-lime-50 text-lime-700',
-    accent: 'text-lime-700',
-    bar: 'from-lime-400 to-amber-400',
-  },
-  {
-    ring: 'ring-amber-200',
-    badge: 'bg-amber-50 text-amber-600',
-    accent: 'text-amber-600',
-    bar: 'from-amber-400 to-orange-500',
-  },
-  {
-    ring: 'ring-red-200',
-    badge: 'bg-red-50 text-red-600',
-    accent: 'text-red-600',
-    bar: 'from-orange-500 to-red-600',
-  },
-]
-
 /**
  * IDEA 2 — EVERYDAY CONFESSIONS
  *
@@ -48,42 +18,37 @@ const TONES = [
  * turns it from relatable into unsettling. Real numbers, real sources,
  * deliberately ordered from "barely anything" to "this one flight undid
  * years of small choices."
+ *
+ * Restyled as a raw-edged 2x2 grid on a dark earth-toned ground: orange
+ * Courier New stat, hover = orange border + glow + leaf burst.
  */
 export function EverydayConfessions() {
   return (
-    <div className="mx-auto max-w-4xl space-y-5">
-      {EVERYDAY_CONFESSIONS.map((item, i) => {
+    <div className="confessions-grid mx-auto grid max-w-4xl grid-cols-1 gap-6 sm:grid-cols-2">
+      {EVERYDAY_CONFESSIONS.map((item) => {
         const Icon = ICONS[item.icon]
-        const tone = TONES[i % TONES.length]
         return (
           <div
             key={item.id}
-            className={cn(
-              'group relative overflow-hidden rounded-2xl border border-slate-200 bg-white p-6 sm:p-7 shadow-sm transition-all hover:shadow-lg hover:-translate-y-0.5 animate-fade-in-up',
-              `animate-delay-${Math.min((i + 1) * 100, 300)}`
-            )}
+            data-burst
+            className="group relative border border-[#2c2925] bg-[#0f0d08] p-7 text-left transition-all duration-[400ms] ease-out hover:-translate-y-1 hover:border-[var(--tm-orange)] hover:shadow-[0_0_45px_rgba(232,87,10,0.22)]"
           >
-            {/* Left accent bar */}
-            <div className={cn('absolute inset-y-0 left-0 w-1.5 bg-gradient-to-b', tone.bar)} />
+            <Icon className="mb-5 h-5 w-5 text-[var(--tm-ash)]" />
 
-            <div className="grid grid-cols-1 sm:grid-cols-[auto_1fr_auto] gap-4 sm:gap-6 items-start pl-2">
-              <div className={cn('flex h-12 w-12 shrink-0 items-center justify-center rounded-xl ring-4', tone.badge, tone.ring)}>
-                <Icon className={cn('h-5 w-5', tone.accent)} />
-              </div>
+            <p className="eyebrow mb-3" style={{ fontSize: '0.7rem' }}>
+              {item.moment}
+            </p>
 
-              <div>
-                <p className="text-xs font-bold uppercase tracking-widest text-slate-400 mb-1">{item.moment}</p>
-                <p className="text-base sm:text-lg font-semibold text-slate-800 leading-snug mb-2">{item.truth}</p>
-                <p className="text-sm text-slate-500 leading-relaxed">{item.context}</p>
-                <p className="mt-3 text-[11px] text-slate-400 leading-relaxed">{item.source}</p>
-              </div>
+            <p className="hero-counter mb-4 leading-tight" style={{ fontSize: 'clamp(1.6rem, 3.4vw, 2.2rem)' }}>
+              {item.headline}
+            </p>
 
-              <div className="sm:text-right shrink-0">
-                <p className={cn('text-2xl sm:text-3xl font-black tabular-nums leading-none', tone.accent)}>
-                  {item.headline}
-                </p>
-              </div>
-            </div>
+            <p className="mb-2 text-base leading-snug text-[#ddd]" style={{ fontFamily: 'Georgia, serif' }}>
+              {item.truth}
+            </p>
+            <p className="mb-3 text-sm leading-relaxed text-[#999]">{item.context}</p>
+
+            <p className="mono text-[0.68rem] leading-relaxed text-[var(--tm-ash)]">{item.source}</p>
           </div>
         )
       })}
