@@ -62,10 +62,11 @@ export function EarthFeverChart() {
   const renderFeverDot = (props: FeverDotProps) => {
     const { cx, cy, index } = props
     if (index !== EARTH_FEVER_DATA.length - 1 || cx == null || cy == null) {
-      return <circle cx={cx ?? 0} cy={cy ?? 0} r={0} fill="none" />
+      return <circle key={index} cx={cx ?? 0} cy={cy ?? 0} r={0} fill="none" />
     }
     return (
       <circle
+        key={index}
         cx={cx}
         cy={cy}
         r={5}
