@@ -206,3 +206,9 @@ thermamorph/
 | **Efficiency** | Rule engine runs in <1 ms, envelope loss calculated once and reused, deterministic results |
 | **Testing** | Unit tests for input validators and energy engine core functions |
 | **Accessibility** | ARIA labels on interactive elements, semantic HTML, keyboard navigation |
+
+---
+
+## 11. AI Tool Usage Disclosure
+
+Per the challenge's tool-usage enforcement requirements, see [AI_USAGE.md](./AI_USAGE.md) for which tools were used, why, how the build prompts evolved, and the GenAI-vs-human division of work.
