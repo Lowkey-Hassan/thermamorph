@@ -2,7 +2,7 @@ import { createServerClient } from '@supabase/ssr'
 import type { CookieOptions } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
 
-const PROTECTED = ['/dashboard', '/audit', '/analysis', '/results']
+const PROTECTED = ['/dashboard', '/audit', '/analysis', '/results', '/update-password']
 const AUTH_ROUTES = ['/login', '/signup']
 
 type CookieItem = { name: string; value: string; options: CookieOptions }
@@ -55,6 +55,12 @@ export async function proxy(request: NextRequest) {
 
 export const config = {
   matcher: [
-    '/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)',
+    // Match all request paths except:
+    // - _next/static (static files)
+    // - _next/image (image optimization files)
+    // - favicon.ico
+    // - public assets (svg, png, jpg, jpeg, gif, webp)
+    // - API routes (handle their own auth checks)
+    '/((?!_next/static|_next/image|favicon.ico|api|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)',
   ],
 }
