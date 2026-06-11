@@ -72,143 +72,102 @@ Buildings account for 40–60% of a household's total carbon emissions, yet most
 └─────────────────────────────────────────────────────────┘
 ```
 
-### Energy Calculation Model
+### Energy Calculation Model — How the Carbon Score Is Actually Calculated
 
-The rule-based engine follows ASHRAE 90.1 / BRE BREDEM screening-level methodology:
+ThermaMorph's scoring engine (`lib/analysis/energy-engine.ts`, backed by reference
+data in `lib/analysis/knowledge-base.ts`) is a **deterministic, rule-based
+screening audit** — not a black box. It follows the methodology professional
+energy auditors use under **ASHRAE 90.1** (Energy Standard for Buildings, used
+for the steady-state heat-balance formula and U-value benchmarks) and the UK
+BRE's **BREDEM** (Building Research Establishment Domestic Energy Model, used
+for the degree-day climate adjustment and occupancy-based load split), localised
+with **ECBC 2017 / BEE star-labelling** data for Indian construction. Every
+number on the results page can be traced back to a formula and a cited constant
+— no opaque ML sits between the audit inputs and the score.
 
-1. **Era classification** — building construction era determines U-values (pre-1950 → modern)
-2. **Envelope heat loss** — steady-state formula: `Q = U × A × ΔT × hours / 1000`
-3. **Climate adjustment** — heating/cooling degree days per location
-4. **HVAC degradation** — age-based efficiency penalty (0.8%/year, capped at 30%)
-5. **Carbon score** — normalised 0–100 relative to best/worst-case intensity for building type
-6. **Vision override** — photo analysis (HF BLIP) upgrades severity of flagged issues
+The pipeline runs in nine steps:
 
----
+**1. Era classification → U-values.** The building's construction year maps to a
+U-value profile (W/m²K — lower is better insulation) for walls, roof, windows,
+floor, doors, and airtightness (air changes/hour at 50 Pa):
 
-## 4. Key Features
+| Era | Walls | Roof | Windows | Floor | Doors | Airtightness (ACH₅₀) |
+|---|---|---|---|---|---|---|
+| Pre-1950 | 2.10 | 1.80 | 5.8 | 1.20 | 3.5 | 15 |
+| 1950–1970 | 1.70 | 1.40 | 5.6 | 1.00 | 3.2 | 12 |
+| 1970–1990 | 1.20 | 0.90 | 3.8 | 0.80 | 2.8 | 9 |
+| 1990–2005 | 0.80 | 0.50 | 2.8 | 0.60 | 2.2 | 7 |
+| 2005–2015 | 0.45 | 0.30 | 1.8 | 0.45 | 1.8 | 5 |
+| Post-2015 | 0.28 | 0.18 | 1.2 | 0.30 | 1.4 | 3 |
+| **ASHRAE 90.1 / ECBC 2017 best practice** | **0.28** | **0.18** | **1.2** | **0.25** | **1.4** | **2** |
 
-- **Photo-to-score in minutes** — no expertise required
-- **EXIF GPS extraction** — location auto-fills from photo metadata
-- **Free AI vision** — Hugging Face BLIP detects cracks, old windows, dirty HVAC from photos
-- **ASHRAE-grade modelling** — same framework professional energy auditors use
-- **Compare audits** — overlay multiple buildings on one chart
-- **Export PDF** — full report with contractor-ready scope of work
-- **Zero AI API cost** — rule engine runs entirely server-side; vision is optional free tier
+**2. Geometry estimation.** From the building's floor area alone (no architectural
+plans needed), the engine derives a simplified envelope: `perimeter = √floorArea × 4`,
+`wallArea = perimeter × 2.8 m` (average ceiling height), `windowArea = wallArea × 25%`
+(typical window-to-wall ratio), `roofArea = floorArea × 1.1` (roof overhang factor),
+`doorArea = 4 m²`.
 
----
-
-## 5. Assumptions Made
-
-| Assumption | Rationale |
-|---|---|
-| Window-to-wall ratio of 25% | Typical for residential and light commercial |
-| Average ceiling height 2.8 m | Standard assumption when floor plan is unknown |
-| HVAC age defaults to build year | Conservative — replaced when user provides install year |
-| Carbon intensity per grid region | Uses approximate grid carbon factors; not real-time |
-| Energy costs in USD | Configurable in `lib/analysis/knowledge-base.ts` |
-| 40% of roof available for solar | Conservative estimate accounting for obstructions |
-| Results are indicative | A licensed auditor should verify before starting work |
-
----
-
-## 6. Tech Stack
-
-| Layer | Technology |
-|---|---|
-| Framework | Next.js 16.2 (App Router) |
-| Language | TypeScript (strict mode) |
-| Styling | Tailwind CSS v4 |
-| Database & Auth | Supabase (PostgreSQL + RLS + Storage) |
-| Charts | Recharts |
-| Vision AI | Hugging Face Inference API (BLIP) — free tier |
-| EXIF | exifr (client-side, dynamic import) |
-| Deployment | Vercel |
-
----
-
-## 7. Setup & Running Locally
-
-### Prerequisites
-- Node.js 18+
-- A free [Supabase](https://supabase.com) project
-- (Optional) A free [Hugging Face](https://huggingface.co) account for vision analysis
-
-### Steps
-
-```bash
-# 1. Clone the repository
-git clone https://github.com/YOUR_USERNAME/thermamorph.git
-cd thermamorph
-
-# 2. Install dependencies
-npm install
-
-# 3. Copy environment variables
-cp .env.local.example .env.local
-# Edit .env.local and fill in your Supabase keys
-
-# 4. Run database migrations
-# Open Supabase SQL Editor and run:
-#   supabase/migrations/001_initial_schema.sql
-#   supabase/migrations/002_hvac_install_year.sql
-
-# 5. Start development server
-npm run dev
-```
-
-Open [http://localhost:3000](http://localhost:3000)
-
-For full deployment instructions see [SETUP.md](./SETUP.md).
-
----
-
-## 8. Security Practices
-
-- Row Level Security (RLS) enforced in Supabase — users can only access their own audits
-- Input validation and allowlist on all API routes (no mass-assignment vulnerabilities)
-- UUID validation on all route parameters
-- Environment variables never committed (`.env*` in `.gitignore`)
-- Server-side analysis — no sensitive keys exposed to the browser
-
----
-
-## 9. Project Structure
+**3. Envelope heat loss (the ASHRAE steady-state formula).** For each surface —
+walls, roof, windows, floor, doors, plus air infiltration — the engine applies:
 
 ```
-thermamorph/
-├── app/
-│   ├── (auth)/          # Login, signup pages
-│   ├── api/audits/      # REST API routes
-│   ├── audit/new/       # Audit creation form
-│   ├── dashboard/       # Main dashboard
-│   ├── results/[id]/    # Results & export
-│   └── analysis/[id]/   # Analysis progress page
-├── components/
-│   ├── charts/          # Recharts wrappers
-│   ├── layout/          # Sidebar, Header, PageWrapper
-│   └── ui/              # Button, Badge, Card, etc.
-├── lib/
-│   ├── analysis/        # Energy engine, vision, EXIF
-│   ├── api/             # Auth helper, input validators
-│   └── supabase/        # Client, server, DB types, queries
-└── supabase/
-    └── migrations/      # SQL migration files
+Q (kWh) = U × A × ΔT × hours / 1000
 ```
 
----
+where `U` is the surface's thermal transmittance (W/m²K), `A` is its area (m²),
+`ΔT` is the temperature differential driven by local heating/cooling degree-days,
+and `hours` is the building's annual occupancy-weighted operating hours. Cooling
+loss through windows additionally applies a **1.8× solar heat-gain factor** to
+account for direct radiant heat. Infiltration loss uses
+`ACH = airtightness ÷ 20` with a **0.33 Wh/m³K** specific heat capacity of air —
+the standard BREDEM infiltration coefficient. The engine runs this twice — once
+for the building's *actual* U-values, once for ASHRAE *best-practice* U-values —
+and the difference becomes the **envelope penalty** added to the energy intensity.
 
-## 10. Evaluation Criteria Mapping
+**4. Climate & humidity adjustment.** Each location is mapped to a climate zone
+(ECBC 2017 hot-dry / warm-humid / composite / temperate / cold zones, with
+heating and cooling degree-days, e.g. Delhi ≈ 350 HDD / 2,500 CDD vs. Chennai ≈
+5 HDD / 3,000 CDD) using either the entered location text or GPS coordinates from
+photo EXIF data. This produces:
 
-| Criterion | Implementation |
-|---|---|
-| **Code Quality** | TypeScript strict mode, named constants, JSDoc, no `any` types in UI |
-| **Security** | RLS, input allowlisting, UUID guards, no mass-assignment |
-| **Efficiency** | Rule engine runs in <1 ms, envelope loss calculated once and reused, deterministic results |
-| **Testing** | Unit tests for input validators and energy engine core functions |
-| **Accessibility** | ARIA labels on interactive elements, semantic HTML, keyboard navigation |
+```
+climateMultiplier  = 0.7 + 0.3 × (localDegreeDays / 2750)   // 2750 = Delhi reference
+humidityMultiplier = 0.9 + 0.1 × humidityFactor              // e.g. Mumbai = 1.35
+```
 
----
+**5. HVAC efficiency & age degradation.** The selected HVAC system (split AC, VRF,
+heat pump, gas boiler, evaporative cooler, natural ventilation, etc.) carries a
+`baseLoadMultiplier` and Coefficient of Performance (COP) from the knowledge base
+— a high-efficiency VRF system (COP ≈ 4.2, multiplier 0.65) draws far less energy
+per degree of comfort than a window AC unit (COP ≈ 2.4, multiplier 1.15). On top
+of this, every year of equipment age adds wear-based degradation:
 
-## 11. AI Tool Usage Disclosure
+```
+ageDegradation = min(30%, hvacAgeYears × 0.8% per year)
+```
 
-Per the challenge's tool-usage enforcement requirements, see [AI_USAGE.md](./AI_USAGE.md) for which tools were used, why, how the build prompts evolved, and the GenAI-vs-human division of work.
+**6. Composite energy intensity.** All of the above combine into a single
+"adjusted energy intensity" (kWh/m²/year), starting from the building type's
+baseline (residential ≈ 85, office ≈ 185, hospital ≈ 480, etc.):
+
+```
+adjustedIntensity = baseEnergyIntensity
+                     × climateMultiplier
+                     × humidityMultiplier
+                     × hvac.baseLoadMultiplier
+                     × (1 + ageDegradation)
+                     + envelopePenalty
+```
+
+This drives two headline numbers: `annualEnergyKwh = adjustedIntensity × floorArea`,
+and `annualCo2Kg = annualEnergyKwh × gridCarbonIntensity` (using regional grid
+carbon factors — e.g. India national average 0.716 kgCO₂/kWh, UK 0.233, sourced
+from CEA India / IEA Electricity Maps).
+
+**7. Carbon Score — normalised 0–100.** Rather than show a raw, hard-to-interpret
+kWh/m² figure, the engine benchmarks the building against the *realistic best and
+worst case for its building type*:
+
+```
+bestCaseIntensity  = baseEnergyIntensity × 0.60   // a highly efficient building of this type
+worstCaseIntensity = baseEnergyInte

@@ -16,6 +16,7 @@ import { ScoreRing } from '@/components/ui/ProgressBar'
 import { StatCard } from '@/components/ui/StatCard'
 import { EnergyBreakdownChart } from '@/components/charts/EnergyBreakdownChart'
 import { CarbonSavingsChart } from '@/components/charts/CarbonSavingsChart'
+import { CarbonRealityCheck } from '@/components/results/CarbonRealityCheck'
 import { cn, formatNumber, formatCurrency, scoreToGrade } from '@/lib/utils'
 import { SEVERITY_COLORS } from '@/lib/types'
 import type {
@@ -201,6 +202,7 @@ export default function ResultsPage() {
             }
           />
 
+          <div className="flex-1 min-h-0 overflow-y-auto">
           <div id="print-content" className="p-6 space-y-6">
 
             {/* Print-only header */}
@@ -275,6 +277,11 @@ export default function ResultsPage() {
             {/* Overview */}
             {tab === 'Overview' && (
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <CarbonRealityCheck
+                  annualCo2Kg={results.annual_co2_kg}
+                  carbonScore={score}
+                  buildYear={audit.build_year}
+                />
                 <div className="rounded-2xl border border-slate-200 bg-white shadow-sm p-6">
                   <h3 className="text-sm font-semibold text-slate-900 mb-4 flex items-center gap-2">
                     <BarChart3 className="h-4 w-4 text-emerald-500" /> Energy Breakdown
@@ -441,6 +448,7 @@ export default function ResultsPage() {
               </div>
             )}
 
+          </div>
           </div>
         </ContentColumn>
       </AppShell>

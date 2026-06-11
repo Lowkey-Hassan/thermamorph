@@ -56,6 +56,6 @@ Each stage's prompt was informed by the *output* of the previous stage (build er
 ## 5. Verification
 
 - [Final commit history on GitHub](https://github.com/Lowkey-Hassan/thermamorph/commits/main) shows the iterative build described above.
-- `npm test` — 81/81 tests passing (validators + energy engine).
+- `npm test` — 99/99 tests passing (validators + energy engine + carbon equivalents).
 - `npx tsc --noEmit` — 0 errors.
 - See `README.md` §3 ("How the Solution Works") and §4 ("Energy Calculation Model") for the resulting architecture.

@@ -265,6 +265,7 @@ export default function DashboardPage() {
             }
           />
 
+          <div className="flex-1 min-h-0 overflow-y-auto">
           <div className="p-6 space-y-6">
 
             {/* CO2 banner — shown once user has data */}
@@ -495,6 +496,7 @@ export default function DashboardPage() {
               ))}
             </div>
 
+          </div>
           </div>
         </ContentColumn>
       </AppShell>

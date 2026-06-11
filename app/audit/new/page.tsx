@@ -2,7 +2,7 @@
 
 import { useState, useRef, DragEvent } from 'react'
 import { useRouter } from 'next/navigation'
-import { Upload, X, Image as ImageIcon, ChevronRight, ChevronLeft, Building2, Loader2 } from 'lucide-react'
+import { Upload, X, Image as ImageIcon, ChevronRight, ChevronLeft, Building2, Loader2, CheckCircle2, Circle, AlertTriangle } from 'lucide-react'
 import { AppShell, ContentColumn } from '@/components/layout/PageWrapper'
 import { Sidebar } from '@/components/layout/Sidebar'
 import { Header } from '@/components/layout/Header'
@@ -16,8 +16,32 @@ import { detectClimateZoneFromGPS } from '@/lib/analysis/knowledge-base'
 import { BUILDING_TYPE_LABELS, HVAC_TYPE_LABELS } from '@/lib/types'
 import { cn } from '@/lib/utils'
 
-const ZONES = ['windows', 'doors', 'walls', 'vents', 'roof', 'exterior', 'other'] as const
+const ZONES = ['windows', 'doors', 'walls', 'vents', 'hvac', 'roof', 'exterior', 'other'] as const
 type Zone = typeof ZONES[number]
+
+/** Photo categories the analysis engine relies on most. The audit form
+ *  guides users to cover each of these — missing categories produce a
+ *  warning since the carbon estimate will be far less accurate. */
+const REQUIRED_ZONES: { zone: Zone; label: string; hint: string }[] = [
+  { zone: 'windows',  label: 'Windows',     hint: 'Glazing type, frame condition, drafts' },
+  { zone: 'doors',    label: 'Doors',       hint: 'Seals, materials, gaps' },
+  { zone: 'walls',    label: 'Walls',       hint: 'Insulation, cracks, exterior cladding' },
+  { zone: 'vents',    label: 'Vents',       hint: 'Ventilation, ducting, airflow points' },
+  { zone: 'hvac',     label: 'HVAC System', hint: 'AC unit, heater, or boiler — make, age, condition' },
+  { zone: 'exterior', label: 'Exterior',    hint: 'Roofline, facade, overall building shot' },
+]
+
+/** Display labels for the zone <select> dropdown. */
+const ZONE_LABELS: Record<Zone, string> = {
+  windows:  'Windows',
+  doors:    'Doors',
+  walls:    'Walls',
+  vents:    'Vents',
+  hvac:     'HVAC System',
+  roof:     'Roof',
+  exterior: 'Exterior',
+  other:    'Other',
+}
 
 interface UploadedFile {
   id: string
@@ -56,6 +80,10 @@ export default function NewAuditPage() {
   const [files, setFiles] = useState<UploadedFile[]>([])
   const [dragging, setDragging] = useState(false)
   const [gpsDetected, setGpsDetected] = useState<string | null>(null)
+  const [ackMissing, setAckMissing] = useState(false)
+
+  const coveredZones = new Set(files.map((f) => f.zone))
+  const missingRequired = REQUIRED_ZONES.filter((r) => !coveredZones.has(r.zone))
 
   function setField(k: keyof typeof form, v: string) {
     setForm((f) => ({ ...f, [k]: v }))
@@ -217,6 +245,7 @@ export default function NewAuditPage() {
           description="Run an AI-powered carbon footprint analysis on your building"
         />
 
+        <div className="flex-1 min-h-0 overflow-y-auto">
         <div className="p-6 max-w-3xl">
           {/* Stepper */}
           <div className="flex items-center mb-8">
@@ -351,6 +380,35 @@ export default function NewAuditPage() {
           {/* Step 1: Photo upload */}
           {step === 1 && (
             <div className="space-y-6">
+              {/* Required photo checklist */}
+              <Card>
+                <h3 className="text-sm font-semibold text-slate-900 mb-1">What to upload</h3>
+                <p className="text-xs text-slate-500 mb-4 leading-relaxed">
+                  For an accurate carbon estimate, upload at least one photo (or a short video frame) covering each
+                  area below. Tag each file using the dropdown after you upload it.
+                </p>
+                <ul className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                  {REQUIRED_ZONES.map((r) => {
+                    const done = coveredZones.has(r.zone)
+                    return (
+                      <li key={r.zone} className="flex items-start gap-2.5">
+                        {done ? (
+                          <CheckCircle2 className="h-4 w-4 text-emerald-500 mt-0.5 shrink-0" aria-hidden="true" />
+                        ) : (
+                          <Circle className="h-4 w-4 text-slate-300 mt-0.5 shrink-0" aria-hidden="true" />
+                        )}
+                        <div>
+                          <p className={cn('text-sm font-medium', done ? 'text-slate-700' : 'text-slate-900')}>
+                            {r.label}
+                          </p>
+                          <p className="text-xs text-slate-400">{r.hint}</p>
+                        </div>
+                      </li>
+                    )
+                  })}
+                </ul>
+              </Card>
+
               {/* Dropzone */}
               <div
                 role="button"
@@ -385,7 +443,8 @@ export default function NewAuditPage() {
                   Drop photos here or <span className="text-emerald-600">click to browse</span>
                 </p>
                 <p className="text-xs text-slate-400 mt-1">
-                  JPEG, PNG, WEBP, MP4. For best results: windows, doors, walls, vents, exterior.
+                  JPEG, PNG, WEBP, MP4. Cover all areas in the checklist above: windows, doors, walls, vents,
+                  HVAC system, and exterior.
                 </p>
               </div>
 
@@ -413,7 +472,7 @@ export default function NewAuditPage() {
                         className="text-xs border border-slate-200 rounded-md px-2 py-1.5 bg-white text-slate-700 focus:outline-none focus:ring-2 focus:ring-emerald-500"
                       >
                         {ZONES.map((z) => (
-                          <option key={z} value={z}>{z.charAt(0).toUpperCase() + z.slice(1)}</option>
+                          <option key={z} value={z}>{ZONE_LABELS[z]}</option>
                         ))}
                       </select>
                       {f.uploading ? (
@@ -434,9 +493,37 @@ export default function NewAuditPage() {
                 </div>
               )}
 
+              {/* Missing-photo warning */}
+              {missingRequired.length > 0 && (
+                <div className="rounded-lg bg-amber-50 border border-amber-200 px-4 py-3 text-sm text-amber-800 flex gap-3">
+                  <AlertTriangle className="h-5 w-5 text-amber-500 shrink-0 mt-0.5" aria-hidden="true" />
+                  <div className="space-y-2">
+                    <p>
+                      <span className="font-semibold">Missing photos: </span>
+                      {missingRequired.map((r) => r.label).join(', ')}.
+                      Warning: if you don&rsquo;t upload everything, you won&rsquo;t get a proper output.
+                    </p>
+                    <label className="flex items-center gap-2 text-xs font-medium text-amber-900 cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={ackMissing}
+                        onChange={(e) => setAckMissing(e.target.checked)}
+                        className="h-3.5 w-3.5 rounded border-amber-300 text-emerald-600 focus:ring-emerald-500"
+                      />
+                      Continue anyway — I understand the results may be inaccurate
+                    </label>
+                  </div>
+                </div>
+              )}
+
               <div className="flex justify-between">
                 <Button variant="outline" onClick={() => setStep(0)} icon={<ChevronLeft className="h-4 w-4" />}>Back</Button>
-                <Button onClick={() => setStep(2)} icon={<ChevronRight className="h-4 w-4" />} iconPosition="right">
+                <Button
+                  onClick={() => setStep(2)}
+                  disabled={missingRequired.length > 0 && !ackMissing}
+                  icon={<ChevronRight className="h-4 w-4" />}
+                  iconPosition="right"
+                >
                   Review
                 </Button>
               </div>
@@ -489,6 +576,7 @@ export default function NewAuditPage() {
               </div>
             </div>
           )}
+        </div>
         </div>
       </ContentColumn>
     </AppShell>
