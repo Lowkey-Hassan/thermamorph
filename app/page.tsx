@@ -76,7 +76,7 @@ export default function LandingPage() {
               Sign in
             </Link>
             <Link
-              href="/register"
+              href="/signup"
               className="mono border border-[var(--tm-orange)] px-4 py-2 text-[11px] uppercase tracking-[0.2em] text-[var(--tm-orange)] transition-all hover:bg-[var(--tm-orange)] hover:text-black"
             >
               Get started
@@ -107,7 +107,7 @@ export default function LandingPage() {
         </p>
 
         <div className="mt-10 flex flex-col items-center justify-center gap-4 sm:flex-row">
-          <Link href="/register" className={BTN_PRIMARY} data-burst>
+          <Link href="/signup" className={BTN_PRIMARY} data-burst>
             Start free audit
             <ArrowRight className="h-3.5 w-3.5" />
           </Link>
@@ -361,7 +361,7 @@ export default function LandingPage() {
           <br />
           Now act.
         </h2>
-        <Link href="/register" className={BTN_PRIMARY} data-burst>
+        <Link href="/signup" className={BTN_PRIMARY} data-burst>
           Run your first audit
           <ChevronRight className="h-3.5 w-3.5" />
         </Link>
