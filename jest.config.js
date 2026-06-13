@@ -14,6 +14,8 @@ const config = {
     'lib/api/validators.ts',
     'lib/analysis/energy-engine.ts',
     'lib/analysis/carbon-equivalents.ts',
+    'lib/analysis/knowledge-base.ts',
+    'lib/utils.ts',
   ],
 }
 

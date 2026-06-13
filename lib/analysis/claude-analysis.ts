@@ -1,7 +1,15 @@
 /**
- * ThermaMorph Analysis Entry Point
- * Wraps the rule-based energy engine. No external AI API required.
- * Function name kept as `runClaudeAnalysis` for API route compatibility.
+ * ThermaMorph Analysis Engine — entry point.
+ *
+ * Today this wraps the deterministic, rule-based ASHRAE/BREDEM energy engine
+ * (`runEnergyEngine`) plus optional Hugging Face vision signals
+ * (`VisionInsights`), so no external LLM API is required to run.
+ *
+ * This module is the seam where a future Claude/OpenAI vision call would
+ * plug in: `visionInsights` is already a structured, typed input to the
+ * engine, so a richer multimodal analysis step can populate the same shape
+ * (or extend `AnalysisResult`) without changing callers of
+ * `runAnalysisEngine` in app/api/audits/[id]/analyze/route.ts.
  */
 
 import { runEnergyEngine } from './energy-engine'
@@ -20,8 +28,10 @@ export interface AuditContext {
   visionInsights?: VisionInsights | null
 }
 
-export async function runClaudeAnalysis(ctx: AuditContext): Promise<AnalysisResult> {
+/** Run the full analysis pipeline for an audit and return its results. */
+export async function runAnalysisEngine(ctx: AuditContext): Promise<AnalysisResult> {
   // Rule-based engine is synchronous but we keep async signature for API compat
+  // (and for future async AI-vision-backed implementations).
   return runEnergyEngine({
     auditId: ctx.auditId,
     buildingType: ctx.buildingType,

@@ -7,6 +7,7 @@ import {
   ArrowLeft, Copy, CheckCheck, Loader2, AlertCircle,
   Zap, Leaf, DollarSign, TrendingDown, BarChart3, Download,
 } from 'lucide-react'
+import { createClient } from '@/lib/supabase/client'
 import { AppShell, ContentColumn } from '@/components/layout/PageWrapper'
 import { Sidebar } from '@/components/layout/Sidebar'
 import { Header } from '@/components/layout/Header'
@@ -78,6 +79,10 @@ export default function ResultsPage() {
 
   const loadResults = useCallback(async () => {
     try {
+      const supabase = createClient()
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) { router.push('/login'); return }
+
       const res = await fetch(`/api/audits/${id}`)
       if (!res.ok) { setError('Results not found.'); setLoading(false); return }
       const json = await res.json() as AuditPageData & { audit: AuditRow }
@@ -337,7 +342,7 @@ export default function ResultsPage() {
                       <div key={p.id} className="rounded-2xl border border-white/5 bg-white/[0.03] p-5 hover:bg-white/[0.05] transition-colors">
                         <div className="flex items-start justify-between gap-4 mb-2">
                           <div className="flex items-center gap-2">
-                            <span className="text-base leading-none">{icon}</span>
+                            <span className="text-base leading-none" aria-hidden="true">{icon}</span>
                             <h4 className="text-sm font-semibold text-slate-100">{p.title}</h4>
                           </div>
                           <span className={cn('text-xs font-bold px-2.5 py-1 rounded-full shrink-0', sev?.bg, sev?.text)}>
@@ -453,7 +458,4 @@ export default function ResultsPage() {
           </div>
           </div>
         </ContentColumn>
-      </AppShell>
-    </>
-  )
-}
+      </AppSh

@@ -244,35 +244,29 @@ describe('validateAuditPatch', () => {
 
   it('throws when body contains only disallowed fields', () => {
     expect(() =>
-      validateAuditPatch({ id: 'abc', status: 'hacked', user_id: 'xyz' })
+      validateAuditPatch({ id: 'abc', user_id: 'xyz' })
     ).toThrow('No valid fields provided for update')
   })
 
-  it('accepts partial patch with one field', () => {
-    const patch = validateAuditPatch({ floor_area: 500 })
-    expect(patch.floor_area).toBe(500)
-  })
-
-  it('accepts hvac_install_year set to null', () => {
-    const patch = validateAuditPatch({ hvac_install_year: null })
-    expect(patch.hvac_install_year).toBeNull()
-  })
-
-  it('throws on invalid field value', () => {
+  it('rejects status values other than the allowed client transition', () => {
     expect(() =>
-      validateAuditPatch({ name: '' })
-    ).toThrow('name is required')
+      validateAuditPatch({ id: 'abc', status: 'hacked', user_id: 'xyz' })
+    ).toThrow('Invalid status: clients may only set status to uploading')
   })
 
-  it('strips id, status, user_id, created_at unconditionally', () => {
-    const dangerous = {
-      id:         'new-id',
-      status:     'completed',
-      user_id:    'attacker',
-      created_at: '2020-01-01',
-      name:       'Safe Name',
-    }
-    const patch = validateAuditPatch(dangerous)
-    expect(Object.keys(patch)).toEqual(['name'])
+  it('accepts status: "uploading" (the only client-initiated transition)', () => {
+    const patch = validateAuditPatch({ status: 'uploading' })
+    expect(patch.status).toBe('uploading')
   })
-})
+
+  it.each(['analyzing', 'complete', 'error', 'draft', 'completed'])(
+    'rejects server-only status value %s from a client patch',
+    (status) => {
+      expect(() => validateAuditPatch({ status })).toThrow(
+        'Invalid status: clients may only set status to uploading'
+      )
+    }
+  )
+
+  it('accepts partial patch with one field', () => {
+    const patch = validateAuditPatch({ floor_area: 500

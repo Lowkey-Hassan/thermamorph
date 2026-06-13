@@ -36,31 +36,39 @@ export function CarbonSavingsChart({ data, height = 260 }: CarbonSavingsChartPro
     effort: r.effort,
   }));
 
+  const summary = data.length === 0
+    ? 'Bar chart of CO2 savings by roadmap item. No roadmap items yet.'
+    : `Bar chart of estimated annual CO2 savings by roadmap item: ${data
+        .map((r) => `${r.title}, ${r.co2SavingKg.toLocaleString()} kilograms per year`)
+        .join('; ')}.`;
+
   return (
-    <ResponsiveContainer width="100%" height={height}>
-      <BarChart data={chartData} margin={{ top: 4, right: 8, left: 8, bottom: 60 }}>
-        <CartesianGrid strokeDasharray="3 3" stroke="#1e293b" />
-        <XAxis
-          dataKey="name"
-          tick={{ fontSize: 11, fill: '#94a3b8' }}
-          angle={-35}
-          textAnchor="end"
-          interval={0}
-        />
-        <YAxis
-          tick={{ fontSize: 11, fill: '#94a3b8' }}
-          tickFormatter={(v: number) => `${v} kg`}
-        />
-        <Tooltip
-          formatter={(value: number) => [`${value.toLocaleString()} kg CO2/yr`, 'CO2 Reduction']}
-          contentStyle={{ borderRadius: '8px', border: '1px solid rgba(255,255,255,0.1)', fontSize: '13px', backgroundColor: '#1e293b', color: '#e2e8f0' }}
-        />
-        <Bar dataKey="co2SavingKg" radius={[4, 4, 0, 0]}>
-          {chartData.map((d, i) => (
-            <Cell key={i} fill={EFFORT_COLOR[d.effort] ?? '#6b7280'} />
-          ))}
-        </Bar>
-      </BarChart>
-    </ResponsiveContainer>
+    <div role="img" aria-label={summary}>
+      <ResponsiveContainer width="100%" height={height} aria-hidden="true">
+        <BarChart data={chartData} margin={{ top: 4, right: 8, left: 8, bottom: 60 }}>
+          <CartesianGrid strokeDasharray="3 3" stroke="#1e293b" />
+          <XAxis
+            dataKey="name"
+            tick={{ fontSize: 11, fill: '#94a3b8' }}
+            angle={-35}
+            textAnchor="end"
+            interval={0}
+          />
+          <YAxis
+            tick={{ fontSize: 11, fill: '#94a3b8' }}
+            tickFormatter={(v: number) => `${v} kg`}
+          />
+          <Tooltip
+            formatter={(value: number) => [`${value.toLocaleString()} kg CO2/yr`, 'CO2 Reduction']}
+            contentStyle={{ borderRadius: '8px', border: '1px solid rgba(255,255,255,0.1)', fontSize: '13px', backgroundColor: '#1e293b', color: '#e2e8f0' }}
+          />
+          <Bar dataKey="co2SavingKg" radius={[4, 4, 0, 0]}>
+            {chartData.map((d, i) => (
+              <Cell key={i} fill={EFFORT_COLOR[d.effort] ?? '#6b7280'} />
+            ))}
+          </Bar>
+        </BarChart>
+      </ResponsiveContainer>
+    </div>
   );
 }

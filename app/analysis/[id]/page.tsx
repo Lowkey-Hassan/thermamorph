@@ -3,6 +3,7 @@
 import { useEffect, useState, useRef } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import { Leaf, Zap, BarChart3, FileText, CheckCircle, XCircle } from 'lucide-react'
+import { createClient } from '@/lib/supabase/client'
 
 const STEPS = [
   { icon: Leaf,       label: 'Preparing building context' },
@@ -51,6 +52,10 @@ export default function AnalysisPage() {
 
     async function runAnalysis() {
       try {
+        const supabase = createClient()
+        const { data: { user } } = await supabase.auth.getUser()
+        if (!user) { router.push('/login'); return }
+
         const res = await fetch(`/api/audits/${id}/analyze`, { method: 'POST' })
         const data = await res.json()
 

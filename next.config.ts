@@ -26,6 +26,7 @@ const nextConfig: NextConfig = {
   },
 
   // Long-cache immutable Next.js build assets; HTML/data stay revalidated.
+  // Also apply a baseline set of security headers to every response.
   async headers() {
     return [
       {
@@ -34,8 +35,27 @@ const nextConfig: NextConfig = {
           { key: "Cache-Control", value: "public, max-age=31536000, immutable" },
         ],
       },
-    ];
-  },
-};
-
-export default nextConfig;
+      {
+        source: "/:path*",
+        headers: [
+          // Prevent this app from being framed by other sites (clickjacking).
+          { key: "X-Frame-Options", value: "DENY" },
+          // Stop browsers from MIME-sniffing responses away from declared Content-Type.
+          { key: "X-Content-Type-Options", value: "nosniff" },
+          // Don't leak full referrer URLs to third parties.
+          { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
+          // This app doesn't use camera/mic/geolocation browser APIs — deny by default.
+          { key: "Permissions-Policy", value: "camera=(), microphone=(), geolocation=()" },
+          // Baseline CSP: same-origin by default, with Supabase (auth/storage)
+          // and the Hugging Face inference API allowed for data/XHR, and
+          // framing disallowed entirely.
+          // 'unsafe-eval' is only added in development — Next.js dev/HMR
+          // (webpack eval-based source maps, React Refresh) requires it,
+          // but production builds don't, so prod keeps the stricter policy.
+          {
+            key: "Content-Security-Policy",
+            value: [
+              "default-src 'self'",
+              `script-src 'self' 'unsafe-inline'${process.env.NODE_ENV === "development" ? " 'unsafe-eval'" : ""}`,
+              "style-src 'self' 'unsafe-inline'",
+              "img-src 'self' data: blob: https://*.supabase.co"

@@ -20,7 +20,7 @@ const HF_API_BASE   = 'https://api-inference.huggingface.co/models'
 const REQUEST_TIMEOUT_MS = 15_000
 
 /** Maximum number of images to analyse per audit (keeps free-tier usage in check). */
-const MAX_IMAGES_PER_AUDIT = 5
+export const MAX_IMAGES_PER_AUDIT = 5
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -205,5 +205,3 @@ export async function analyzeImages(imageUrls: string[]): Promise<VisionInsights
     rawCaptions:    captions,
     imagesAnalyzed: captions.length,
     confidence:     captions.length >= 3 ? 'high' : 'low',
-  }
-}

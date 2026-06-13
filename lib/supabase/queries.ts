@@ -6,12 +6,16 @@
  * Centralising the casts here means route handlers stay readable.
  */
 
-import { createClient } from './server'
+import { createClient, createServiceClient } from './server'
 import type { Database } from './database.types'
 
 // Use the actual return type of createClient — avoids SupabaseClient<Database>
 // generic parameter mismatch introduced in postgrest-js v2.
 type Supabase = Awaited<ReturnType<typeof createClient>>
+// Structurally identical to `Supabase` (both wrap createServerClient<Database>),
+// kept as a distinct alias so service-role-only helpers are self-documenting
+// about which privilege level they expect.
+type ServiceSupabase = Awaited<ReturnType<typeof createServiceClient>>
 type Tables   = Database['public']['Tables']
 
 // ─── Row type exports (used by pages and routes) ──────────────────────────────
@@ -44,15 +48,15 @@ export async function getAuditByIdAndUser(
     .single() as unknown as QuerySingle<AuditRow>
 }
 
-/** Fetch upload storage paths for an audit. */
+/** Fetch upload storage paths and mime types (used to separate photos from video) for an audit. */
 export async function getAuditUploads(
   supabase: Supabase,
   auditId: string
-): Promise<QueryList<Pick<UploadRow, 'storage_path'>>> {
+): Promise<QueryList<Pick<UploadRow, 'storage_path' | 'mime_type'>>> {
   return supabase
     .from('audit_uploads')
-    .select('storage_path')
-    .eq('audit_id', auditId) as unknown as QueryList<Pick<UploadRow, 'storage_path'>>
+    .select('storage_path,mime_type')
+    .eq('audit_id', auditId) as unknown as QueryList<Pick<UploadRow, 'storage_path' | 'mime_type'>>
 }
 
 /** Update audit status (and any extra allowed fields). */
@@ -138,3 +142,57 @@ export async function insertAuditUpload(
     .from('audit_uploads')
     .insert(upload) as Promise<{ error: { message: string } | null }>
 }
+
+/** Delete an audit owned by a specific user (row-level ownership check). */
+export async function deleteAuditForUser(
+  supabase: Supabase,
+  auditId: string,
+  userId: string
+): Promise<{ error: { message: string } | null }> {
+  return supabase
+    .from('audits')
+    .delete()
+    .eq('id', auditId)
+    .eq('user_id', userId) as unknown as { error: { message: string } | null }
+}
+
+// ─── Results bundle (GET /api/audits/[id]) ─────────────────────────────────────
+
+export interface AuditResultsBundle {
+  results:         AnalysisResultRow | null
+  problemAreas:    ProblemAreaRow[]
+  roadmapItems:    RoadmapItemRow[]
+  energyBreakdown: EnergyBreakdownRow[]
+}
+
+/** Fetch the full results bundle (analysis, problem areas, roadmap, energy
+ *  breakdown) for a completed audit, in a single round trip. */
+export async function getAuditResultsBundle(
+  supabase: Supabase,
+  auditId: string
+): Promise<AuditResultsBundle> {
+  const [resultsRes, problemsRes, roadmapRes, breakdownRes] = await Promise.all([
+    supabase.from('analysis_results').select('*').eq('audit_id', auditId).single(),
+    supabase.from('problem_areas').select('*').eq('audit_id', auditId).order('sort_order'),
+    supabase.from('roadmap_items').select('*').eq('audit_id', auditId).order('priority', { ascending: false }),
+    supabase.from('energy_breakdown').select('*').eq('audit_id', auditId),
+  ]) as unknown as [
+    QuerySingle<AnalysisResultRow>,
+    QueryList<ProblemAreaRow>,
+    QueryList<RoadmapItemRow>,
+    QueryList<EnergyBreakdownRow>,
+  ]
+
+  return {
+    results:         resultsRes.data,
+    problemAreas:    problemsRes.data  ?? [],
+    roadmapItems:    roadmapRes.data   ?? [],
+    energyBreakdown: breakdownRes.data ?? [],
+  }
+}
+
+// ─── Analysis-result writes (service client — bypasses RLS) ───────────────────
+//
+// The /api/audits/[id]/analyze route persists engine output using the
+// service-role client, which never goes through the user's RLS policies.
+// These helpers centralise that client's `as unknow

@@ -1,4 +1,4 @@
-import { forwardRef, InputHTMLAttributes, SelectHTMLAttributes, TextareaHTMLAttributes } from 'react';
+import { cloneElement, forwardRef, isValidElement, InputHTMLAttributes, ReactElement, SelectHTMLAttributes, TextareaHTMLAttributes } from 'react';
 import { cn } from '@/lib/utils';
 
 // ─── Base styles ──────────────────────────────────────────────────────────────
@@ -37,6 +37,18 @@ interface FieldProps {
 }
 
 export function Field({ label, required, error, hint, className, htmlFor, children }: FieldProps) {
+  // When there's an error and we know the field's id, link the input to its
+  // error message via aria-describedby/aria-invalid so screen readers
+  // announce it.
+  const errorId = error && htmlFor ? `${htmlFor}-error` : undefined;
+  const content =
+    errorId && isValidElement(children)
+      ? cloneElement(children as ReactElement<Record<string, unknown>>, {
+          'aria-invalid': true,
+          'aria-describedby': errorId,
+        })
+      : children;
+
   return (
     <div className={cn('space-y-1', className)}>
       {label && (
@@ -44,9 +56,13 @@ export function Field({ label, required, error, hint, className, htmlFor, childr
           {label}
         </Label>
       )}
-      {children}
+      {content}
       {hint && !error && <p className="text-xs text-slate-500">{hint}</p>}
-      {error && <p className="text-xs text-red-400">{error}</p>}
+      {error && (
+        <p id={errorId} className="text-xs text-red-400">
+          {error}
+        </p>
+      )}
     </div>
   );
 }
@@ -116,24 +132,4 @@ export const Select = forwardRef<HTMLSelectElement, SelectProps>(
 );
 Select.displayName = 'Select';
 
-// ─── Textarea ─────────────────────────────────────────────────────────────────
-
-interface TextareaProps extends TextareaHTMLAttributes<HTMLTextAreaElement> {
-  error?: boolean;
-}
-
-export const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(
-  ({ error, className, ...props }, ref) => (
-    <textarea
-      ref={ref}
-      className={cn(
-        baseInput,
-        'min-h-[100px] resize-y',
-        error && 'border-red-400 focus:ring-red-500 focus:border-red-500',
-        className
-      )}
-      {...props}
-    />
-  )
-);
-Textarea.displayName = 'Textarea';
+// ─── Textarea ─────────────────────────────────────────�

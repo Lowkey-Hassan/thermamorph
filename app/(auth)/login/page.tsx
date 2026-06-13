@@ -6,6 +6,7 @@ import { useRouter, useSearchParams } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { Button } from '@/components/ui/Button'
 import { Input, Field } from '@/components/ui/Input'
+import { safeRedirectPath } from '@/lib/utils'
 import { Mail, Lock } from 'lucide-react'
 
 export default function LoginPage() {
@@ -19,7 +20,9 @@ export default function LoginPage() {
 function LoginContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
-  const next = searchParams.get('next') ?? '/dashboard'
+  // Only same-origin relative paths are honoured — prevents open redirects
+  // via a crafted `?next=https://evil.example` query parameter.
+  const next = safeRedirectPath(searchParams.get('next'))
 
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
@@ -90,11 +93,4 @@ function LoginContent() {
         </Link>
         <p className="text-slate-400">
           No account?{' '}
-          <Link href="/signup" className="text-emerald-400 hover:text-emerald-300 transition-colors font-medium">
-            Create one free
-          </Link>
-        </p>
-      </div>
-    </div>
-  )
-}
+          <

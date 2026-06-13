@@ -14,8 +14,13 @@ import { createClient } from '@/lib/supabase/client'
 import { insertAuditUpload } from '@/lib/supabase/queries'
 import { extractGPSFromFiles } from '@/lib/analysis/exif-extractor'
 import { detectClimateZoneFromGPS } from '@/lib/analysis/knowledge-base'
+import { MAX_IMAGES_PER_AUDIT } from '@/lib/analysis/hf-vision'
 import { BUILDING_TYPE_LABELS, HVAC_TYPE_LABELS } from '@/lib/types'
 import { cn } from '@/lib/utils'
+
+/** Per-file upload size limit. Keeps Supabase Storage usage and upload
+ *  times reasonable for a desktop-first audit workflow. */
+const MAX_FILE_SIZE_BYTES = 25 * 1024 * 1024 // 25 MB
 
 const ZONES = ['windows', 'doors', 'walls', 'vents', 'hvac', 'roof', 'exterior', 'other'] as const
 type Zone = typeof ZONES[number]
@@ -86,6 +91,11 @@ export default function NewAuditPage() {
   const coveredZones = new Set(files.map((f) => f.zone))
   const missingRequired = REQUIRED_ZONES.filter((r) => !coveredZones.has(r.zone))
 
+  // The vision model only analyses the first MAX_IMAGES_PER_AUDIT images —
+  // warn the user so extra uploads don't silently go unanalysed.
+  const imageCount = files.filter((f) => f.file.type.startsWith('image/')).length
+  const exceedsAnalysisLimit = imageCount > MAX_IMAGES_PER_AUDIT
+
   function setField(k: keyof typeof form, v: string) {
     setForm((f) => ({ ...f, [k]: v }))
     setErrors((e) => ({ ...e, [k]: '' }))
@@ -105,7 +115,17 @@ export default function NewAuditPage() {
   }
 
   async function addFiles(raw: File[]) {
-    const valid = raw.filter((f) => f.type.startsWith('image/') || f.type.startsWith('video/'))
+    const accepted = raw.filter((f) => f.type.startsWith('image/') || f.type.startsWith('video/'))
+    const oversized = accepted.filter((f) => f.size > MAX_FILE_SIZE_BYTES)
+    const valid = accepted.filter((f) => f.size <= MAX_FILE_SIZE_BYTES)
+
+    if (oversized.length > 0) {
+      const limitMb = MAX_FILE_SIZE_BYTES / 1024 / 1024
+      setGlobalError(
+        `${oversized.length} file${oversized.length > 1 ? 's' : ''} skipped — over the ${limitMb} MB limit: ${oversized.map((f) => f.name).join(', ')}`
+      )
+    }
+
     const newFiles: UploadedFile[] = valid.map((f) => ({
       id: crypto.randomUUID(),
       file: f,
@@ -186,15 +206,21 @@ export default function NewAuditPage() {
       const { audit } = await auditRes.json()
       const auditId = audit.id
 
-      // 2. Update status to uploading
-      await fetch(`/api/audits/${auditId}`, {
+      // 2. Update status to uploading (best-effort — surfaces in the
+      // dashboard's status badge; upload still proceeds if this fails)
+      const statusRes = await fetch(`/api/audits/${auditId}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ status: 'uploading' }),
       })
+      if (!statusRes.ok) {
+        console.error('Failed to mark audit as uploading:', await statusRes.text())
+      }
 
-      // 3. Upload each file to Supabase Storage
-      for (const f of files) {
+      // 3. Upload all files to Supabase Storage in parallel — each file's
+      // status updates independently, so concurrent uploads don't block
+      // each other on slow connections.
+      await Promise.all(files.map(async (f) => {
         setFiles((prev) =>
           prev.map((x) => x.id === f.id ? { ...x, uploading: true } : x)
         )
@@ -210,7 +236,7 @@ export default function NewAuditPage() {
           setFiles((prev) =>
             prev.map((x) => x.id === f.id ? { ...x, uploading: false, error: uploadError.message } : x)
           )
-          continue
+          return
         }
 
         // Register the upload record against the audit.
@@ -226,7 +252,7 @@ export default function NewAuditPage() {
         setFiles((prev) =>
           prev.map((x) => x.id === f.id ? { ...x, uploading: false, storagePath } : x)
         )
-      }
+      }))
 
       // 4. Navigate to analysis page (which will trigger the AI analysis)
       router.push(`/analysis/${auditId}`)
@@ -469,6 +495,7 @@ export default function NewAuditPage() {
                       <select
                         value={f.zone}
                         onChange={(e) => setFileZone(f.id, e.target.value as Zone)}
+                        aria-label={`Zone for ${f.file.name}`}
                         className="text-xs border border-white/10 rounded-md px-2 py-1.5 bg-white/5 text-slate-300 focus:outline-none focus:ring-2 focus:ring-emerald-500"
                       >
                         {ZONES.map((z) => (
@@ -490,6 +517,18 @@ export default function NewAuditPage() {
                       )}
                     </div>
                   ))}
+                </div>
+              )}
+
+              {/* Analysis-limit warning */}
+              {exceedsAnalysisLimit && (
+                <div className="rounded-lg bg-amber-500/10 border border-amber-500/20 px-4 py-3 text-sm text-amber-300 flex gap-3">
+                  <AlertTriangle className="h-5 w-5 text-amber-500 shrink-0 mt-0.5" aria-hidden="true" />
+                  <p>
+                    <span className="font-semibold">{imageCount} images uploaded — </span>
+                    only the first {MAX_IMAGES_PER_AUDIT} will be analysed by the AI vision model.
+                    Choose your clearest, most representative photos for best results.
+                  </p>
                 </div>
               )}
 
@@ -535,50 +574,4 @@ export default function NewAuditPage() {
             <div className="space-y-6">
               <Card>
                 <h3 className="text-base font-semibold text-slate-100 mb-4 flex items-center gap-2">
-                  <Building2 className="h-5 w-5 text-emerald-500" /> Building Summary
-                </h3>
-                <dl className="grid grid-cols-2 gap-x-8 gap-y-3 text-sm">
-                  {[
-                    ['Audit Name', form.name],
-                    ['Building Type', BUILDING_TYPE_LABELS[form.buildingType as keyof typeof BUILDING_TYPE_LABELS] ?? form.buildingType],
-                    ['Year Built', form.buildYear],
-                    ['Floor Area', `${form.floorArea} m2`],
-                    ['Location', form.location],
-                    ['HVAC System', HVAC_TYPE_LABELS[form.hvacType as keyof typeof HVAC_TYPE_LABELS] ?? form.hvacType],
-                    ...(form.hvacInstallYear ? [['HVAC Install Year', form.hvacInstallYear]] : []),
-                    ['Photos', `${files.length} file${files.length !== 1 ? 's' : ''}`],
-                  ].map(([label, value]) => (
-                    <div key={label}>
-                      <dt className="text-slate-400">{label}</dt>
-                      <dd className="font-medium text-slate-100">{value}</dd>
-                    </div>
-                  ))}
-                </dl>
-              </Card>
-
-              {globalError && (
-                <div className="rounded-lg bg-red-500/10 border border-red-500/20 px-4 py-3 text-sm text-red-300">
-                  {globalError}
-                </div>
-              )}
-
-              <div className="flex justify-between">
-                <Button variant="outline" onClick={() => setStep(1)} icon={<ChevronLeft className="h-4 w-4" />}>Back</Button>
-                <Button
-                  onClick={handleSubmit}
-                  loading={submitting}
-                  size="lg"
-                  icon={submitting ? undefined : <ChevronRight className="h-4 w-4" />}
-                  iconPosition="right"
-                >
-                  {submitting ? 'Uploading...' : 'Submit & Analyse'}
-                </Button>
-              </div>
-            </div>
-          )}
-        </div>
-        </div>
-      </ContentColumn>
-    </AppShell>
-  )
-}
+             

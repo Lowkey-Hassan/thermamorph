@@ -100,12 +100,21 @@ export function validateAuditCreate(body: Record<string, unknown>): ValidatedAud
 
 /**
  * Allowlist of fields a client may update on an audit.
- * Prevents mass-assignment of sensitive columns (user_id, status, id, etc.).
+ * Prevents mass-assignment of sensitive columns (user_id, id, etc.).
+ *
+ * `status` is included but tightly restricted (see CLIENT_STATUS_TRANSITIONS
+ * below) — the client may only move an audit from `draft` to `uploading`
+ * as it starts the upload step. All other transitions (`analyzing`,
+ * `complete`, `error`) are server-only, set by the analyze route using the
+ * service-role client.
  */
 const AUDIT_PATCH_ALLOWLIST = new Set([
   'name', 'building_type', 'build_year', 'floor_area',
-  'location', 'hvac_type', 'hvac_install_year',
+  'location', 'hvac_type', 'hvac_install_year', 'status',
 ])
+
+/** The only audit status values a client is allowed to set via PATCH. */
+const CLIENT_STATUS_TRANSITIONS = new Set(['uploading'])
 
 export interface ValidatedAuditPatch {
   name?: string
@@ -115,6 +124,7 @@ export interface ValidatedAuditPatch {
   location?: string
   hvac_type?: string
   hvac_install_year?: number | null
+  status?: 'uploading'
 }
 
 /**
@@ -141,20 +151,4 @@ export function validateAuditPatch(body: Record<string, unknown>): ValidatedAudi
         patch[key] = sanitizeString(val, 'hvacType', { maxLen: 80 })
         break
       case 'build_year':
-        patch[key] = sanitizeYear(val, 'buildYear', { min: 1800 })
-        break
-      case 'floor_area':
-        patch[key] = sanitizePositiveNumber(val, 'floorArea', { min: 5, max: 100_000 })
-        break
-      case 'hvac_install_year':
-        patch[key] = (val === null || val === '') ? null : sanitizeYear(val, 'hvacInstallYear', { min: 1960 })
-        break
-    }
-  }
-
-  if (Object.keys(patch).length === 0) {
-    throw new Error('No valid fields provided for update')
-  }
-
-  return patch as ValidatedAuditPatch
-}
+        patch[key] = sanitizeYear(val,

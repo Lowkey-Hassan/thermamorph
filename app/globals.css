@@ -374,3 +374,19 @@ html:has(.landing-brutal)::-webkit-scrollbar-thumb:hover { background: var(--tm-
   animation: tm-blink 1s steps(1) infinite;
 }
 @keyframes tm-blink { 50% { opacity: 0; } }
+
+/* ───────────────────────────────────────────────────────────────────────
+   Reduced motion — WCAG 2.3.3 (Animation from Interactions)
+   Users who have asked the OS for reduced motion get every custom
+   animation and transition collapsed to a single, near-instant frame
+   instead of continuous loops (leaf/ember drift, pulses, EKG sweeps,
+   typewriter carets, etc.). Layout and content remain unchanged.
+   ─────────────────────────────────────────────────────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

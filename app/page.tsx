@@ -1,14 +1,31 @@
 import Link from 'next/link'
+import dynamic from 'next/dynamic'
 import {
   Building2, Zap, Leaf, ArrowRight, CheckCircle, BarChart3, Camera, FileText,
   ChevronRight, HeartPulse, Receipt as ReceiptIcon, Flame, Sprout,
 } from 'lucide-react'
-import { LiveEmissionsCounter } from '@/components/landing/LiveEmissionsCounter'
-import { EarthFeverChart } from '@/components/landing/EarthFeverChart'
-import { EverydayConfessions } from '@/components/landing/EverydayConfessions'
-import { PlanetReceipt } from '@/components/landing/PlanetReceipt'
-import { VanishingVoices } from '@/components/landing/VanishingVoices'
-import { ParticleCanvas } from '@/components/landing/ParticleCanvas'
+
+// These landing sections are heavy (animations, canvas, charts) and mostly
+// below the fold, so they're code-split into separate chunks rather than
+// bundled into the initial page load.
+const LiveEmissionsCounter = dynamic(() =>
+  import('@/components/landing/LiveEmissionsCounter').then((m) => m.LiveEmissionsCounter)
+)
+const EarthFeverChart = dynamic(() =>
+  import('@/components/landing/EarthFeverChart').then((m) => m.EarthFeverChart)
+)
+const EverydayConfessions = dynamic(() =>
+  import('@/components/landing/EverydayConfessions').then((m) => m.EverydayConfessions)
+)
+const PlanetReceipt = dynamic(() =>
+  import('@/components/landing/PlanetReceipt').then((m) => m.PlanetReceipt)
+)
+const VanishingVoices = dynamic(() =>
+  import('@/components/landing/VanishingVoices').then((m) => m.VanishingVoices)
+)
+const ParticleCanvas = dynamic(() =>
+  import('@/components/landing/ParticleCanvas').then((m) => m.ParticleCanvas)
+)
 
 const FEATURES = [
   {
