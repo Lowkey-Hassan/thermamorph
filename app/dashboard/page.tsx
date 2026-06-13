@@ -19,6 +19,7 @@ import { Button } from '@/components/ui/Button'
 import { Badge } from '@/components/ui/Badge'
 import { ScoreRing } from '@/components/ui/ProgressBar'
 import { createClient } from '@/lib/supabase/client'
+import { getAuditsForUser, getAnalysisScores } from '@/lib/supabase/queries'
 import { cn, scoreToGrade } from '@/lib/utils'
 import type { Database } from '@/lib/supabase/database.types'
 
@@ -190,12 +191,7 @@ export default function DashboardPage() {
     if (!user) { router.push('/login'); return }
     setUserName(user.user_metadata?.full_name ?? user.email ?? 'User')
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const { data: auditRows } = await (supabase as any)
-      .from('audits')
-      .select('*')
-      .eq('user_id', user.id)
-      .order('created_at', { ascending: false })
+    const { data: auditRows } = await getAuditsForUser(supabase, user.id)
 
     const list: Audit[] = auditRows ?? []
     setAudits(list)
@@ -203,11 +199,7 @@ export default function DashboardPage() {
     // Fetch carbon scores for completed audits
     const completedIds = list.filter((a) => a.status === 'complete').map((a) => a.id)
     if (completedIds.length > 0) {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const { data: results } = await (supabase as any)
-        .from('analysis_results')
-        .select('audit_id,carbon_score,annual_co2_kg,annual_energy_kwh,estimated_annual_cost')
-        .in('audit_id', completedIds)
+      const { data: results } = await getAnalysisScores(supabase, completedIds)
 
       const map: Record<string, AuditScore> = {}
       for (const r of results ?? []) {

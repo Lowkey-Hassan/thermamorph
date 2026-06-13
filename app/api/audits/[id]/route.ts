@@ -1,6 +1,7 @@
 import { NextResponse, type NextRequest } from 'next/server'
 import { requireAuth } from '@/lib/api/auth'
 import { assertUUID, validateAuditPatch } from '@/lib/api/validators'
+import { updateAuditForUser } from '@/lib/supabase/queries'
 import type { Database } from '@/lib/supabase/database.types'
 
 type AuditRow           = Database['public']['Tables']['audits']['Row']
@@ -86,14 +87,7 @@ export async function PATCH(request: NextRequest, { params }: Params) {
     )
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const { data, error } = await (supabase as any)
-    .from('audits')
-    .update(patch)
-    .eq('id', id)
-    .eq('user_id', user.id)
-    .select()
-    .single() as { data: AuditRow | null; error: { message: string } | null }
+  const { data, error } = await updateAuditForUser(supabase, id, user.id, patch)
 
   if (error || !data) {
     console.error('[PATCH /api/audits/:id]', error?.message)

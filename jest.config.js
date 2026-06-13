@@ -13,6 +13,7 @@ const config = {
   collectCoverageFrom: [
     'lib/api/validators.ts',
     'lib/analysis/energy-engine.ts',
+    'lib/analysis/carbon-equivalents.ts',
   ],
 }
 

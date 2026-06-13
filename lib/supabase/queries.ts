@@ -67,3 +67,74 @@ export async function updateAuditStatus(
     .update(patch)
     .eq('id', auditId) as Promise<{ error: { message: string } | null }>
 }
+
+/** Fetch all audits owned by a user, most recent first. */
+export async function getAuditsForUser(
+  supabase: Supabase,
+  userId: string
+): Promise<QueryList<AuditRow>> {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  return (supabase as any)
+    .from('audits')
+    .select('*')
+    .eq('user_id', userId)
+    .order('created_at', { ascending: false }) as Promise<QueryList<AuditRow>>
+}
+
+export type AuditScoreRow = Pick<
+  AnalysisResultRow,
+  'audit_id' | 'carbon_score' | 'annual_co2_kg' | 'annual_energy_kwh' | 'estimated_annual_cost'
+>
+
+/** Fetch summary score fields for a set of completed audits. */
+export async function getAnalysisScores(
+  supabase: Supabase,
+  auditIds: string[]
+): Promise<QueryList<AuditScoreRow>> {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  return (supabase as any)
+    .from('analysis_results')
+    .select('audit_id,carbon_score,annual_co2_kg,annual_energy_kwh,estimated_annual_cost')
+    .in('audit_id', auditIds) as Promise<QueryList<AuditScoreRow>>
+}
+
+/** Create a new audit row (status defaults to 'draft') and return it. */
+export async function insertAudit(
+  supabase: Supabase,
+  fields: Tables['audits']['Insert']
+): Promise<QuerySingle<AuditRow>> {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  return (supabase as any)
+    .from('audits')
+    .insert(fields)
+    .select()
+    .single() as Promise<QuerySingle<AuditRow>>
+}
+
+/** Apply a partial update to an audit owned by a specific user and return the updated row. */
+export async function updateAuditForUser(
+  supabase: Supabase,
+  auditId: string,
+  userId: string,
+  patch: Tables['audits']['Update']
+): Promise<QuerySingle<AuditRow>> {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  return (supabase as any)
+    .from('audits')
+    .update(patch)
+    .eq('id', auditId)
+    .eq('user_id', userId)
+    .select()
+    .single() as Promise<QuerySingle<AuditRow>>
+}
+
+/** Register an uploaded building photo/video against an audit. */
+export async function insertAuditUpload(
+  supabase: Supabase,
+  upload: Tables['audit_uploads']['Insert']
+): Promise<{ error: { message: string } | null }> {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  return (supabase as any)
+    .from('audit_uploads')
+    .insert(upload) as Promise<{ error: { message: string } | null }>
+}

@@ -1,6 +1,7 @@
 import { NextResponse, type NextRequest } from 'next/server'
 import { requireAuth } from '@/lib/api/auth'
 import { validateAuditCreate } from '@/lib/api/validators'
+import { insertAudit } from '@/lib/supabase/queries'
 import type { Database } from '@/lib/supabase/database.types'
 
 type AuditRow = Database['public']['Tables']['audits']['Row']
@@ -51,22 +52,17 @@ export async function POST(request: NextRequest) {
     )
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const { data, error } = await (supabase as any)
-    .from('audits')
-    .insert({
-      user_id:           user.id,
-      name:              fields.name,
-      building_type:     fields.buildingType,
-      build_year:        fields.buildYear,
-      floor_area:        fields.floorArea,
-      location:          fields.location,
-      hvac_type:         fields.hvacType,
-      hvac_install_year: fields.hvacInstallYear,
-      status:            'draft',
-    })
-    .select()
-    .single() as { data: AuditRow | null; error: { message: string } | null }
+  const { data, error } = await insertAudit(supabase, {
+    user_id:           user.id,
+    name:              fields.name,
+    building_type:     fields.buildingType,
+    build_year:        fields.buildYear,
+    floor_area:        fields.floorArea,
+    location:          fields.location,
+    hvac_type:         fields.hvacType,
+    hvac_install_year: fields.hvacInstallYear,
+    status:            'draft',
+  })
 
   if (error || !data) {
     console.error('[POST /api/audits]', error?.message)

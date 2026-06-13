@@ -1,7 +1,7 @@
 export type AuditStatus = 'draft' | 'uploading' | 'analyzing' | 'complete' | 'error'
 export type Severity = 'low' | 'medium' | 'high' | 'critical'
 export type Effort = 'quick' | 'medium' | 'major'
-export type Zone = 'windows' | 'doors' | 'walls' | 'vents' | 'roof' | 'exterior' | 'other'
+export type Zone = 'windows' | 'doors' | 'walls' | 'vents' | 'hvac' | 'roof' | 'exterior' | 'other'
 
 export interface Database {
   public: {

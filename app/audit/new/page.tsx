@@ -11,6 +11,7 @@ import { Input, Field, Select } from '@/components/ui/Input'
 import { Card } from '@/components/ui/Card'
 import { Badge } from '@/components/ui/Badge'
 import { createClient } from '@/lib/supabase/client'
+import { insertAuditUpload } from '@/lib/supabase/queries'
 import { extractGPSFromFiles } from '@/lib/analysis/exif-extractor'
 import { detectClimateZoneFromGPS } from '@/lib/analysis/knowledge-base'
 import { BUILDING_TYPE_LABELS, HVAC_TYPE_LABELS } from '@/lib/types'
@@ -212,9 +213,8 @@ export default function NewAuditPage() {
           continue
         }
 
-        // Register upload record — cast required due to postgrest-js v2 type inference
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        await (supabase as any).from('audit_uploads').insert({
+        // Register the upload record against the audit.
+        await insertAuditUpload(supabase, {
           audit_id: auditId,
           storage_path: storagePath,
           file_name: f.file.name,
