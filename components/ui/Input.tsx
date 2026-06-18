@@ -132,4 +132,24 @@ export const Select = forwardRef<HTMLSelectElement, SelectProps>(
 );
 Select.displayName = 'Select';
 
-// ─── Textarea ─────────────────────────────────────────�
+// ─── Textarea ─────────────────────────────────────────────────────────────────
+
+interface TextareaProps extends TextareaHTMLAttributes<HTMLTextAreaElement> {
+  error?: boolean;
+}
+
+export const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(
+  ({ error, className, ...props }, ref) => (
+    <textarea
+      ref={ref}
+      className={cn(
+        baseInput,
+        'min-h-[100px] resize-y',
+        error && 'border-red-400 focus:ring-red-500 focus:border-red-500',
+        className
+      )}
+      {...props}
+    />
+  )
+);
+Textarea.displayName = 'Textarea';

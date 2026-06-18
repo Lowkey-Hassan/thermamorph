@@ -11,10 +11,12 @@
  *   Roadmap          — at least one item; cost and co2_saving are positive
  *   Problem areas    — each has required fields; severity is valid enum value
  *   Contractor brief — non-empty string
+ *   Vision insights  — applyVisionOverrides adjusts severities/descriptions; skipped when confidence is 'none'
  */
 
 import { runEnergyEngine } from '../lib/analysis/energy-engine'
 import type { AuditInput } from '../lib/analysis/energy-engine'
+import type { VisionInsights } from '../lib/analysis/hf-vision'
 import { scoreToGrade } from '../lib/utils'
 
 // ─── Shared fixture ───────────────────────────────────────────────────────────
@@ -270,5 +272,178 @@ describe('runEnergyEngine — energyBreakdown', () => {
     for (const entry of energyBreakdown) {
       expect(entry.percentage).toBeLessThanOrEqual(100)
     }
+  })
+})
+
+// ─── Vision insights overrides ────────────────────────────────────────────────
+
+function findArea(problemAreas: ReturnType<typeof runEnergyEngine>['problemAreas'], id: string) {
+  const area = problemAreas.find((p) => p.id === id)
+  expect(area).toBeDefined()
+  return area!
+}
+
+const OLD_BUILDING_INPUT: AuditInput = {
+  ...BASE_INPUT,
+  buildYear: 1975,
+  hvacInstallYear: 2015,
+}
+
+const NEWER_BUILDING_INPUT: AuditInput = {
+  ...BASE_INPUT,
+  buildYear: 1995,
+  hvacInstallYear: 2015,
+}
+
+describe('runEnergyEngine — vision insights overrides', () => {
+  it('skips applyVisionOverrides entirely when confidence is "none"', () => {
+    const noVision = runEnergyEngine(OLD_BUILDING_INPUT)
+    const withNoneVision = runEnergyEngine({
+      ...OLD_BUILDING_INPUT,
+      visionInsights: {
+        hasOldWindows: true,
+        hasSinglePaneWindows: true,
+        hasOldAcUnit: true,
+        hasDirtyEquipment: true,
+        hasFluorescentLighting: true,
+        hasOldLighting: true,
+        hasRoofDamage: true,
+        hasCracks: true,
+        hasMould: true,
+        hasGoodInsulation: true,
+        rawCaptions: [],
+        imagesAnalyzed: 0,
+        confidence: 'none',
+        skippedReason: 'no usable images',
+      },
+    })
+
+    const before = findArea(noVision.problemAreas, 'pa-windows')
+    const after = findArea(withNoneVision.problemAreas, 'pa-windows')
+    expect(after.severity).toBe(before.severity)
+    expect(after.description).toBe(before.description)
+  })
+
+  it('elevates severities and appends evidence for high-confidence findings', () => {
+    const vi: VisionInsights = {
+      hasOldWindows: false,
+      hasSinglePaneWindows: true,
+      hasOldAcUnit: true,
+      hasDirtyEquipment: true,
+      hasFluorescentLighting: true,
+      hasOldLighting: false,
+      hasRoofDamage: true,
+      hasCracks: true,
+      hasMould: true,
+      hasGoodInsulation: false,
+      rawCaptions: ['single-pane glass visible', 'cracked exterior wall', 'roof damage visible'],
+      imagesAnalyzed: 3,
+      confidence: 'high',
+    }
+
+    const baseline = runEnergyEngine(OLD_BUILDING_INPUT)
+    const { problemAreas } = runEnergyEngine({ ...OLD_BUILDING_INPUT, visionInsights: vi })
+
+    // Single-pane windows photographic evidence escalates to critical.
+    expect(findArea(problemAreas, 'pa-windows').severity).toBe('critical')
+
+    // Roof damage escalates to critical.
+    expect(findArea(problemAreas, 'pa-roof').severity).toBe('critical')
+
+    // Cracks escalate the wall problem area to high and append evidence.
+    const walls = findArea(problemAreas, 'pa-walls')
+    expect(walls.severity).toBe('high')
+    expect(walls.description).toContain('cracks')
+
+    // Old AC unit escalates medium HVAC severity to high; dirty equipment
+    // appends servicing guidance and increases the estimated loss.
+    const hvac = findArea(problemAreas, 'pa-hvac')
+    const baselineHvac = findArea(baseline.problemAreas, 'pa-hvac')
+    expect(hvac.severity).toBe('high')
+    expect(hvac.description).toContain('dirty filters or fouled coils')
+    expect(hvac.estimatedLossKwh).toBeGreaterThan(baselineHvac.estimatedLossKwh)
+
+    // Cracks + mould escalate infiltration severity and note moisture ingress.
+    const infiltration = findArea(problemAreas, 'pa-infiltration')
+    expect(infiltration.severity).toBe('high')
+    expect(infiltration.description).toContain('Mould detected')
+
+    // Fluorescent lighting confirms the lighting problem area and appends evidence.
+    const lighting = findArea(problemAreas, 'pa-lighting')
+    expect(lighting.severity).toBe('medium')
+    expect(lighting.description).toContain('Fluorescent tube fittings confirmed')
+  })
+
+  it('downgrades severity when photos show good insulation, and old-window evidence elevates a medium-severity window rating', () => {
+    const vi: VisionInsights = {
+      hasOldWindows: true,
+      hasSinglePaneWindows: false,
+      hasOldAcUnit: false,
+      hasDirtyEquipment: false,
+      hasFluorescentLighting: false,
+      hasOldLighting: false,
+      hasRoofDamage: false,
+      hasCracks: false,
+      hasMould: false,
+      hasGoodInsulation: true,
+      rawCaptions: ['double glazing visible', 'insulation visible in attic'],
+      imagesAnalyzed: 2,
+      confidence: 'low',
+    }
+
+    const { problemAreas } = runEnergyEngine({ ...NEWER_BUILDING_INPUT, visionInsights: vi })
+
+    // Baseline windows severity is 'medium'; hasOldWindows bumps it to 'high',
+    // then hasGoodInsulation downgrades 'high' back to 'medium' and prefixes
+    // the description with a note about likely glazing upgrades.
+    const windows = findArea(problemAreas, 'pa-windows')
+    expect(windows.severity).toBe('medium')
+    expect(windows.description).toContain('Photos suggest some glazing upgrades may already be present.')
+  })
+})
+
+// ─── HVAC/lighting description edge cases ─────────────────────────────────────
+
+describe('runEnergyEngine — HVAC/lighting description edge cases', () => {
+  it('falls back to generic "HVAC system" wording when hvacType is empty, for an old unit', () => {
+    const { problemAreas } = runEnergyEngine({
+      ...BASE_INPUT,
+      hvacType: '',
+      buildYear: 1975,
+      hvacInstallYear: 2010,
+    })
+
+    const hvac = findArea(problemAreas, 'pa-hvac')
+    expect(hvac.severity).toBe('high')
+    expect(hvac.description).toContain('The HVAC system')
+    expect(hvac.description).toContain('years old')
+  })
+
+  it('omits the age clause and reports medium severity for a recently installed, inefficient HVAC type', () => {
+    const { problemAreas, roadmapItems } = runEnergyEngine({
+      ...BASE_INPUT,
+      hvacType: 'window_ac',
+      buildYear: 2010,
+      hvacInstallYear: 2020,
+    })
+
+    const hvac = findArea(problemAreas, 'pa-hvac')
+    expect(hvac.severity).toBe('medium')
+    expect(hvac.title).toBe('HVAC System Below Optimal Efficiency')
+    expect(hvac.description).not.toContain('years old')
+
+    const hvacRoadmap = roadmapItems.find((r) => r.id === 'ri-hvac')
+    expect(hvacRoadmap).toBeDefined()
+    expect(hvacRoadmap!.description).toContain('window_ac')
+
+    // A 2010 build is below the "medium" lighting cutoff (2015) but at/above
+    // the "low" cutoff (2000), so lighting severity should be 'low'.
+    const lighting = findArea(problemAreas, 'pa-lighting')
+    expect(lighting.severity).toBe('low')
+  })
+
+  it('omits the install-year clause from the contractor brief when hvacInstallYear is not provided', () => {
+    const { contractorBrief } = runEnergyEngine({ ...BASE_INPUT, hvacInstallYear: null })
+    expect(contractorBrief).not.toContain('installed')
   })
 })

@@ -205,3 +205,5 @@ export async function analyzeImages(imageUrls: string[]): Promise<VisionInsights
     rawCaptions:    captions,
     imagesAnalyzed: captions.length,
     confidence:     captions.length >= 3 ? 'high' : 'low',
+  }
+}

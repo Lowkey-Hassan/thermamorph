@@ -151,4 +151,26 @@ export function validateAuditPatch(body: Record<string, unknown>): ValidatedAudi
         patch[key] = sanitizeString(val, 'hvacType', { maxLen: 80 })
         break
       case 'build_year':
-        patch[key] = sanitizeYear(val,
+        patch[key] = sanitizeYear(val, 'buildYear', { min: 1800 })
+        break
+      case 'floor_area':
+        patch[key] = sanitizePositiveNumber(val, 'floorArea', { min: 5, max: 100_000 })
+        break
+      case 'hvac_install_year':
+        patch[key] = (val === null || val === '') ? null : sanitizeYear(val, 'hvacInstallYear', { min: 1960 })
+        break
+      case 'status':
+        if (typeof val !== 'string' || !CLIENT_STATUS_TRANSITIONS.has(val)) {
+          throw new Error(`Invalid status: clients may only set status to ${[...CLIENT_STATUS_TRANSITIONS].join(', ')}`)
+        }
+        patch[key] = val
+        break
+    }
+  }
+
+  if (Object.keys(patch).length === 0) {
+    throw new Error('No valid fields provided for update')
+  }
+
+  return patch as ValidatedAuditPatch
+}

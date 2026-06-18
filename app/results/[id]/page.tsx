@@ -458,4 +458,7 @@ export default function ResultsPage() {
           </div>
           </div>
         </ContentColumn>
-      </AppSh
+      </AppShell>
+    </>
+  )
+}

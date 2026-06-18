@@ -88,6 +88,30 @@ describe('getHvacProfile', () => {
   it('defaults to split_ac for an unrecognized type', () => {
     expect(getHvacProfile('Some Exotic Cooling Gadget')).toBe(HVAC_PROFILES.split_ac)
   })
+
+  it('falls back to vrf_vrv via the "vrf" keyword', () => {
+    expect(getHvacProfile('VRF System')).toBe(HVAC_PROFILES.vrf_vrv)
+  })
+
+  it('falls back to heat_pump via the "heatpump" keyword', () => {
+    expect(getHvacProfile('HeatPump Unit')).toBe(HVAC_PROFILES.heat_pump)
+  })
+
+  it('falls back to gas_boiler via the "gas" keyword', () => {
+    expect(getHvacProfile('Gas Furnace')).toBe(HVAC_PROFILES.gas_boiler)
+  })
+
+  it('falls back to window_ac via the "window" keyword', () => {
+    expect(getHvacProfile('Window Unit AC')).toBe(HVAC_PROFILES.window_ac)
+  })
+
+  it('falls back to central_ac via the "central" keyword', () => {
+    expect(getHvacProfile('Central HVAC System')).toBe(HVAC_PROFILES.central_ac)
+  })
+
+  it('falls back to none via the "fan" keyword', () => {
+    expect(getHvacProfile('Ceiling Fan Only')).toBe(HVAC_PROFILES.none)
+  })
 })
 
 describe('detectClimateZone', () => {
@@ -185,6 +209,22 @@ describe('getCarbonIntensity', () => {
   it('falls back to the India default for unrecognized locations', () => {
     expect(getCarbonIntensity('Somewhere Else')).toBe(0.716)
   })
+
+  it('returns the Gujarat grid intensity for Ahmedabad', () => {
+    expect(getCarbonIntensity('Ahmedabad, Gujarat')).toBe(0.71)
+  })
+
+  it('returns the USA intensity for New York', () => {
+    expect(getCarbonIntensity('New York, USA')).toBe(0.386)
+  })
+
+  it('returns the UAE intensity for Dubai', () => {
+    expect(getCarbonIntensity('Dubai, UAE')).toBe(0.450)
+  })
+
+  it('returns the Singapore carbon intensity', () => {
+    expect(getCarbonIntensity('Singapore')).toBe(0.408)
+  })
 })
 
 describe('getEnergyCostPerKwh', () => {
@@ -206,5 +246,13 @@ describe('getEnergyCostPerKwh', () => {
 
   it('falls back to the EU rate for other international locations', () => {
     expect(getEnergyCostPerKwh('Berlin, Germany', 'residential')).toBe(0.22)
+  })
+
+  it('returns the USA rate for New York', () => {
+    expect(getEnergyCostPerKwh('New York, USA', 'residential')).toBe(0.16)
+  })
+
+  it('returns the Singapore rate for Singapore', () => {
+    expect(getEnergyCostPerKwh('Singapore', 'office')).toBe(0.21)
   })
 })

@@ -93,4 +93,11 @@ function LoginContent() {
         </Link>
         <p className="text-slate-400">
           No account?{' '}
-          <
+          <Link href="/signup" className="text-emerald-400 hover:text-emerald-300 transition-colors font-medium">
+            Create one free
+          </Link>
+        </p>
+      </div>
+    </div>
+  )
+}

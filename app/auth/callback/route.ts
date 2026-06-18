@@ -31,4 +31,11 @@ export async function GET(request: NextRequest) {
       }
     )
 
-    const { error } = await supabase.auth
+    const { error } = await supabase.auth.exchangeCodeForSession(code)
+    if (!error) {
+      return NextResponse.redirect(`${origin}${next}`)
+    }
+  }
+
+  return NextResponse.redirect(`${origin}/login?error=auth_callback_error`)
+}

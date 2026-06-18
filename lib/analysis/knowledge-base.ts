@@ -378,10 +378,19 @@ export const ENERGY_COST_PER_KWH: Record<string, number> = {
   default: 0.10,
 }
 
+// Countries/regions outside India that should fall back to the EU energy
+// rate when no more specific match (UK/USA/Singapore/UAE) applies.
+const EU_LOCATION_KEYWORDS = [
+  'europe', 'germany', 'france', 'spain', 'italy', 'netherlands', 'belgium',
+  'austria', 'portugal', 'ireland', 'poland', 'sweden', 'norway', 'denmark',
+  'finland', 'switzerland', 'greece',
+]
+
 export function getEnergyCostPerKwh(location: string, buildingType: string): number {
   const loc = location.toLowerCase()
-  const isIndia = !loc.includes('uk') && !loc.includes('usa') && !loc.includes('europe') &&
-                  !loc.includes('singapore') && !loc.includes('dubai') && !loc.includes('uae')
+  const isIndia = !loc.includes('uk') && !loc.includes('usa') &&
+                  !loc.includes('singapore') && !loc.includes('dubai') && !loc.includes('uae') &&
+                  !EU_LOCATION_KEYWORDS.some((kw) => loc.includes(kw))
   if (!isIndia) {
     if (loc.includes('uk') || loc.includes('london')) return ENERGY_COST_PER_KWH.uk
     if (loc.includes('usa') || loc.includes('new york')) return ENERGY_COST_PER_KWH.usa

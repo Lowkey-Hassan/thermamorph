@@ -269,4 +269,84 @@ describe('validateAuditPatch', () => {
   )
 
   it('accepts partial patch with one field', () => {
-    const patch = validateAuditPatch({ floor_area: 500
+    const patch = validateAuditPatch({ floor_area: 500 })
+    expect(patch.floor_area).toBe(500)
+  })
+
+  it('accepts hvac_install_year set to null', () => {
+    const patch = validateAuditPatch({ hvac_install_year: null })
+    expect(patch.hvac_install_year).toBeNull()
+  })
+
+  it('throws on invalid field value', () => {
+    expect(() =>
+      validateAuditPatch({ name: '' })
+    ).toThrow('name is required')
+  })
+
+  it('strips id, user_id, created_at unconditionally', () => {
+    const dangerous = {
+      id:         'new-id',
+      user_id:    'attacker',
+      created_at: '2020-01-01',
+      name:       'Safe Name',
+    }
+    const patch = validateAuditPatch(dangerous)
+    expect(Object.keys(patch)).toEqual(['name'])
+  })
+
+  it('sanitizes building_type', () => {
+    const patch = validateAuditPatch({ building_type: '  office  ' })
+    expect(patch.building_type).toBe('office')
+  })
+
+  it('throws when building_type is blank', () => {
+    expect(() =>
+      validateAuditPatch({ building_type: '   ' })
+    ).toThrow('buildingType must not be blank')
+  })
+
+  it('sanitizes location', () => {
+    const patch = validateAuditPatch({ location: '  Chennai, India  ' })
+    expect(patch.location).toBe('Chennai, India')
+  })
+
+  it('throws when location exceeds maximum length', () => {
+    expect(() =>
+      validateAuditPatch({ location: 'x'.repeat(201) })
+    ).toThrow('location exceeds maximum length of 200')
+  })
+
+  it('sanitizes hvac_type', () => {
+    const patch = validateAuditPatch({ hvac_type: '  split_ac  ' })
+    expect(patch.hvac_type).toBe('split_ac')
+  })
+
+  it('throws when hvac_type exceeds maximum length', () => {
+    expect(() =>
+      validateAuditPatch({ hvac_type: 'x'.repeat(81) })
+    ).toThrow('hvacType exceeds maximum length of 80')
+  })
+
+  it('sanitizes build_year', () => {
+    const patch = validateAuditPatch({ build_year: 1995 })
+    expect(patch.build_year).toBe(1995)
+  })
+
+  it('throws when build_year is below the minimum', () => {
+    expect(() =>
+      validateAuditPatch({ build_year: 1799 })
+    ).toThrow('buildYear')
+  })
+
+  it('sanitizes hvac_install_year when given a valid year', () => {
+    const patch = validateAuditPatch({ hvac_install_year: 2020 })
+    expect(patch.hvac_install_year).toBe(2020)
+  })
+
+  it('rejects hvac_install_year below the minimum (1960)', () => {
+    expect(() =>
+      validateAuditPatch({ hvac_install_year: 1959 })
+    ).toThrow('hvacInstallYear')
+  })
+})

@@ -30,3 +30,18 @@ export function scoreToColor(score: number): string {
 export function truncate(str: string, length: number): string {
   return str.length > length ? str.slice(0, length) + '...' : str;
 }
+
+/**
+ * Validate a post-login/auth redirect target.
+ *
+ * Only same-origin, relative paths are allowed (must start with a single
+ * `/`, never `//` or `/\` which browsers treat as protocol-relative URLs).
+ * Falls back to `fallback` for anything else, preventing open-redirect
+ * attacks via crafted `?next=` query parameters.
+ */
+export function safeRedirectPath(next: string | null | undefined, fallback = '/dashboard'): string {
+  if (!next) return fallback;
+  if (!next.startsWith('/')) return fallback;
+  if (next.startsWith('//') || next.startsWith('/\\')) return fallback;
+  return next;
+}

@@ -574,4 +574,50 @@ export default function NewAuditPage() {
             <div className="space-y-6">
               <Card>
                 <h3 className="text-base font-semibold text-slate-100 mb-4 flex items-center gap-2">
-             
+                  <Building2 className="h-5 w-5 text-emerald-500" /> Building Summary
+                </h3>
+                <dl className="grid grid-cols-2 gap-x-8 gap-y-3 text-sm">
+                  {[
+                    ['Audit Name', form.name],
+                    ['Building Type', BUILDING_TYPE_LABELS[form.buildingType as keyof typeof BUILDING_TYPE_LABELS] ?? form.buildingType],
+                    ['Year Built', form.buildYear],
+                    ['Floor Area', `${form.floorArea} m2`],
+                    ['Location', form.location],
+                    ['HVAC System', HVAC_TYPE_LABELS[form.hvacType as keyof typeof HVAC_TYPE_LABELS] ?? form.hvacType],
+                    ...(form.hvacInstallYear ? [['HVAC Install Year', form.hvacInstallYear]] : []),
+                    ['Photos', `${files.length} file${files.length !== 1 ? 's' : ''}`],
+                  ].map(([label, value]) => (
+                    <div key={label}>
+                      <dt className="text-slate-400">{label}</dt>
+                      <dd className="font-medium text-slate-100">{value}</dd>
+                    </div>
+                  ))}
+                </dl>
+              </Card>
+
+              {globalError && (
+                <div className="rounded-lg bg-red-500/10 border border-red-500/20 px-4 py-3 text-sm text-red-300">
+                  {globalError}
+                </div>
+              )}
+
+              <div className="flex justify-between">
+                <Button variant="outline" onClick={() => setStep(1)} icon={<ChevronLeft className="h-4 w-4" />}>Back</Button>
+                <Button
+                  onClick={handleSubmit}
+                  loading={submitting}
+                  size="lg"
+                  icon={submitting ? undefined : <ChevronRight className="h-4 w-4" />}
+                  iconPosition="right"
+                >
+                  {submitting ? 'Uploading...' : 'Submit & Analyse'}
+                </Button>
+              </div>
+            </div>
+          )}
+        </div>
+        </div>
+      </ContentColumn>
+    </AppShell>
+  )
+}

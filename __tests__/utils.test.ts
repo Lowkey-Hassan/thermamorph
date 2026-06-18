@@ -117,4 +117,40 @@ describe('truncate', () => {
   })
 
   it('truncates and appends an ellipsis when longer than the limit', () => {
-    expect(truncate('hello world', 5)).toBe
+    expect(truncate('hello world', 5)).toBe('hello...')
+  })
+
+  it('handles an empty string', () => {
+    expect(truncate('', 5)).toBe('')
+  })
+})
+
+describe('safeRedirectPath', () => {
+  it('allows a normal relative path', () => {
+    expect(safeRedirectPath('/audit/new')).toBe('/audit/new')
+  })
+
+  it('falls back to /dashboard when null or undefined', () => {
+    expect(safeRedirectPath(null)).toBe('/dashboard')
+    expect(safeRedirectPath(undefined)).toBe('/dashboard')
+  })
+
+  it('falls back for absolute URLs (open-redirect attempt)', () => {
+    expect(safeRedirectPath('https://evil.example')).toBe('/dashboard')
+    expect(safeRedirectPath('http://evil.example/path')).toBe('/dashboard')
+  })
+
+  it('falls back for protocol-relative URLs (// or /\\)', () => {
+    expect(safeRedirectPath('//evil.example')).toBe('/dashboard')
+    expect(safeRedirectPath('/\\evil.example')).toBe('/dashboard')
+  })
+
+  it('falls back for paths not starting with /', () => {
+    expect(safeRedirectPath('dashboard')).toBe('/dashboard')
+    expect(safeRedirectPath('')).toBe('/dashboard')
+  })
+
+  it('respects a custom fallback', () => {
+    expect(safeRedirectPath('javascript:alert(1)', '/login')).toBe('/login')
+  })
+})
